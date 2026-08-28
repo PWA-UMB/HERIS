@@ -1,0 +1,1440 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HEIRS — Herramienta Educativa Interactiva de Residuos Sólidos</title>
+    <style>
+        :root {
+            --primary: #1B5E20;
+            --primary-mid: #388E3C;
+            --primary-light: #4CAF50;
+            --accent: #8BC34A;
+            --bg: #F1F8E9;
+            --card: #FFFFFF;
+            --text: #1A1A1A;
+            --muted: #616161;
+            --shadow: 0 4px 18px rgba(0,0,0,0.12);
+            --radius: 16px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* ── SCREENS ── */
+        .screen { display: none; min-height: 100vh; }
+        .screen.active { display: flex; flex-direction: column; }
+
+        /* ── START SCREEN ── */
+        #start-screen {
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+            background: linear-gradient(150deg, #1B5E20 0%, #388E3C 55%, #8BC34A 100%);
+        }
+
+        .start-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 2.5rem 2rem;
+            max-width: 580px;
+            width: 100%;
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+
+        .logo { font-size: 4rem; margin-bottom: 0.25rem; }
+
+        .game-title {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--primary);
+            letter-spacing: -1px;
+        }
+
+        .game-subtitle {
+            color: var(--muted);
+            font-size: 0.95rem;
+            margin-bottom: 1.75rem;
+        }
+
+        .cats-preview {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.625rem;
+            margin-bottom: 1.75rem;
+        }
+
+        .cat-chip {
+            padding: 0.625rem 0.75rem;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-align: left;
+        }
+
+        .settings-row {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 1.75rem;
+        }
+
+        .setting-group { display: flex; flex-direction: column; gap: 0.3rem; text-align: left; }
+
+        .setting-group label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .setting-group select {
+            padding: 0.5rem 0.875rem;
+            border-radius: 8px;
+            border: 2px solid #E0E0E0;
+            background: white;
+            font-size: 0.95rem;
+            color: var(--text);
+            cursor: pointer;
+            outline: none;
+        }
+        .setting-group select:focus { border-color: var(--primary-light); }
+
+        .hint-keys {
+            font-size: 0.75rem;
+            color: var(--muted);
+            margin-bottom: 1rem;
+        }
+        .hint-keys kbd {
+            background: #F5F5F5;
+            border: 1px solid #DDD;
+            border-radius: 4px;
+            padding: 0.1em 0.4em;
+            font-family: monospace;
+        }
+
+        .history-preview {
+            margin-top: 1.5rem;
+            text-align: left;
+        }
+
+        .history-preview-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .history-preview-item {
+            background: #F5F5F5;
+            border-radius: 8px;
+            padding: 0.625rem 0.875rem;
+            font-size: 0.85rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* ── BUTTONS ── */
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-mid));
+            color: white;
+            border: none;
+            padding: 0.875rem 2.75rem;
+            font-size: 1.15rem;
+            font-weight: 800;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(27,94,32,0.4);
+            transition: transform 0.12s, box-shadow 0.12s;
+            width: 100%;
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 22px rgba(27,94,32,0.5); }
+        .btn-primary:active { transform: scale(0.98); }
+
+        .btn-secondary {
+            background: white;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            padding: 0.75rem 1.5rem;
+            font-size: 0.95rem;
+            font-weight: 700;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.12s;
+        }
+        .btn-secondary:hover { background: var(--primary); color: white; }
+
+        /* ── GAME SCREEN ── */
+        #game-screen { flex-direction: column; }
+
+        .game-header {
+            background: white;
+            padding: 0.875rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .hdr-left { display: flex; align-items: center; gap: 0.75rem; }
+
+        .round-badge {
+            background: var(--primary);
+            color: white;
+            padding: 0.35rem 0.875rem;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 0.85rem;
+            white-space: nowrap;
+        }
+
+        .prog-wrap {
+            width: 100px;
+            height: 8px;
+            background: #E0E0E0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .prog-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
+            border-radius: 4px;
+            transition: width 0.4s ease;
+        }
+
+        .timer-display {
+            font-size: 1.1rem;
+            font-weight: 700;
+            min-width: 60px;
+            text-align: center;
+        }
+        .timer-display.warning {
+            color: #D32F2F;
+            animation: pulse 0.5s infinite alternate;
+        }
+
+        @keyframes pulse {
+            from { transform: scale(1); }
+            to   { transform: scale(1.12); }
+        }
+
+        .score-display {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        /* ── GAME MAIN ── */
+        .game-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1.25rem 1rem 1.5rem;
+            gap: 1.25rem;
+        }
+
+        /* Item card */
+        .item-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 1.75rem 1.5rem 1.5rem;
+            text-align: center;
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 300px;
+            position: relative;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-16px) scale(0.95); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .item-emoji { font-size: 4rem; display: block; margin-bottom: 0.75rem; line-height: 1; }
+
+        .item-name { font-size: 1.4rem; font-weight: 800; margin-bottom: 0.2rem; }
+
+        .item-desc { font-size: 0.82rem; color: var(--muted); }
+
+        .trap-badge {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: #E65100;
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 800;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+        }
+
+        .diff-badge {
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+        }
+        .diff-easy   { background: #E8F5E9; color: #1B5E20; }
+        .diff-medium { background: #FFF3E0; color: #E65100; }
+        .diff-hard   { background: #FFEBEE; color: #B71C1C; }
+
+        .hint-text {
+            font-size: 0.88rem;
+            color: var(--muted);
+            font-style: italic;
+        }
+
+        /* Bins */
+        .bins-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.875rem;
+            width: 100%;
+            max-width: 680px;
+        }
+
+        .bin {
+            border-radius: var(--radius);
+            padding: 1.1rem 0.875rem;
+            text-align: center;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: transform 0.13s, box-shadow 0.13s;
+            user-select: none;
+            position: relative;
+        }
+        .bin:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.22); }
+        .bin:active { transform: scale(0.97); }
+
+        .bin-aprovechable {
+            background: #FAFAFA;
+            border-color: #BDBDBD;
+            color: #1A1A1A;
+        }
+        .bin-no_aprovechable {
+            background: #1A1A1A;
+            border-color: #1A1A1A;
+            color: #FFFFFF;
+        }
+        .bin-organico {
+            background: #1B5E20;
+            border-color: #1B5E20;
+            color: #FFFFFF;
+        }
+        .bin-especial {
+            background: #B71C1C;
+            border-color: #B71C1C;
+            color: #FFFFFF;
+        }
+
+        .bin-icon { font-size: 2rem; margin-bottom: 0.375rem; display: block; }
+        .bin-label { font-size: 0.8rem; font-weight: 800; margin-bottom: 0.2rem; letter-spacing: 0.02em; }
+        .bin-sublabel { font-size: 0.68rem; opacity: 0.8; line-height: 1.3; }
+        .bin-key {
+            position: absolute;
+            top: 6px;
+            right: 8px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            opacity: 0.55;
+        }
+
+        .bin.correct-flash { animation: correctFlash 0.5s ease; }
+        .bin.wrong-flash   { animation: wrongFlash 0.45s ease; }
+
+        @keyframes correctFlash {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.06); box-shadow: 0 0 0 8px rgba(76,175,80,0.35); }
+        }
+        @keyframes wrongFlash {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-6px); }
+            75% { transform: translateX(6px); }
+        }
+
+        /* ── FEEDBACK OVERLAY ── */
+        .fb-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.55);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            padding: 1rem;
+            animation: fadeIn 0.18s ease;
+        }
+        .fb-overlay.hidden { display: none; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .fb-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 2rem 1.75rem;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.28);
+            animation: popIn 0.25s ease;
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.82); opacity: 0; }
+            to   { transform: scale(1); opacity: 1; }
+        }
+
+        .fb-icon { font-size: 3.25rem; margin-bottom: 0.5rem; display: block; }
+
+        .fb-title { font-size: 1.6rem; font-weight: 900; margin-bottom: 0.5rem; }
+        .fb-title.correct { color: #2E7D32; }
+        .fb-title.wrong   { color: #C62828; }
+        .fb-title.timeout { color: #E65100; }
+
+        .fb-pts {
+            display: inline-block;
+            font-size: 1rem;
+            font-weight: 800;
+            padding: 0.35rem 1.25rem;
+            border-radius: 20px;
+            margin-bottom: 0.875rem;
+        }
+        .fb-pts.pos { background: #E8F5E9; color: #2E7D32; }
+        .fb-pts.neg { background: #FFEBEE; color: #C62828; }
+
+        .fb-cat-tag {
+            display: inline-block;
+            font-size: 0.82rem;
+            font-weight: 700;
+            padding: 0.35rem 1rem;
+            border-radius: 14px;
+            margin-bottom: 0.875rem;
+            border: 2px solid transparent;
+        }
+
+        .fb-explanation {
+            font-size: 0.9rem;
+            color: var(--muted);
+            line-height: 1.55;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-continue {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.875rem;
+            width: 100%;
+            font-size: 1rem;
+            font-weight: 800;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: background 0.12s;
+        }
+        .btn-continue:hover { background: #388E3C; }
+
+        /* ── STREAK ── */
+        .streak-toast {
+            position: fixed;
+            top: 80px;
+            right: 1.25rem;
+            background: #E65100;
+            color: white;
+            padding: 0.5rem 1.1rem;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 0.92rem;
+            z-index: 150;
+            animation: streakPop 0.3s ease;
+            pointer-events: none;
+        }
+        @keyframes streakPop {
+            from { transform: scale(0) rotate(-8deg); opacity: 0; }
+            to   { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+
+        /* ── RESULTS SCREEN ── */
+        #results-screen {
+            align-items: center;
+            justify-content: flex-start;
+            padding: 2rem 1rem 3rem;
+            background: linear-gradient(150deg, #1B5E20, #388E3C);
+            overflow-y: auto;
+        }
+
+        .results-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 2.25rem 2rem;
+            max-width: 620px;
+            width: 100%;
+            box-shadow: var(--shadow);
+        }
+
+        .results-header { text-align: center; margin-bottom: 1.75rem; }
+
+        .results-trophy { font-size: 4.5rem; display: block; margin-bottom: 0.25rem; }
+
+        .results-class {
+            font-size: 1.75rem;
+            font-weight: 900;
+            color: var(--primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .results-score-big {
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--primary);
+        }
+
+        .section-title {
+            font-size: 0.78rem;
+            font-weight: 800;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.09em;
+            margin: 1.5rem 0 0.75rem;
+            padding-bottom: 0.3rem;
+            border-bottom: 2px solid #F0F0F0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.875rem;
+        }
+
+        .stat-box {
+            background: #F5F5F5;
+            border-radius: 10px;
+            padding: 0.875rem;
+            text-align: center;
+        }
+
+        .stat-val { font-size: 1.75rem; font-weight: 900; color: var(--primary); }
+        .stat-lbl { font-size: 0.72rem; color: var(--muted); margin-top: 0.2rem; }
+
+        .cat-bar { margin-bottom: 0.75rem; }
+
+        .cat-bar-hdr {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.87rem;
+            margin-bottom: 0.3rem;
+        }
+        .cat-bar-lbl { font-weight: 700; }
+        .cat-bar-pct { font-weight: 800; }
+
+        .cat-bar-track {
+            height: 10px;
+            background: #E0E0E0;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .cat-bar-fill {
+            height: 100%;
+            border-radius: 5px;
+            width: 0%;
+            transition: width 1.1s ease;
+        }
+
+        .personal-fb {
+            background: #FFF8E1;
+            border-left: 4px solid #FFC107;
+            border-radius: 0 10px 10px 0;
+            padding: 1rem 1.25rem;
+        }
+
+        .fb-msg { font-size: 0.875rem; color: #4A3800; line-height: 1.5; margin-bottom: 0.5rem; }
+        .fb-msg:last-child { margin-bottom: 0; }
+
+        .history-list { display: flex; flex-direction: column; gap: 0.5rem; }
+
+        .history-item {
+            background: #F5F5F5;
+            border-radius: 8px;
+            padding: 0.625rem 0.875rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.82rem;
+            flex-wrap: wrap;
+            gap: 0.25rem;
+        }
+
+        .history-score { font-weight: 800; color: var(--primary); }
+
+        .results-actions {
+            display: flex;
+            gap: 0.875rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+        .results-actions button { flex: 1; min-width: 120px; }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 480px) {
+            .game-title { font-size: 2rem; }
+            .prog-wrap { width: 70px; }
+            .item-emoji { font-size: 3.25rem; }
+            .bins-grid { gap: 0.625rem; }
+            .bin { padding: 0.875rem 0.5rem; }
+            .bin-icon { font-size: 1.75rem; }
+            .bin-label { font-size: 0.72rem; }
+            .bin-sublabel { display: none; }
+            .stats-grid { grid-template-columns: repeat(3, 1fr); }
+            .results-card { padding: 1.5rem 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ══════════════════════ START SCREEN ══════════════════════ -->
+<div id="start-screen" class="screen active">
+    <div class="start-card">
+        <div class="logo">♻️</div>
+        <h1 class="game-title">HEIRS</h1>
+        <p class="game-subtitle">Herramienta Educativa Interactiva de Residuos Sólidos<br>
+            <small>PGIRS Colombia · Resolución 2184 de 2019 · Separación en la fuente</small>
+        </p>
+
+        <div class="cats-preview">
+            <div class="cat-chip" style="background:#F5F5F5;border:2px solid #BDBDBD;color:#1A1A1A;">🗑️ Aprovechables<br><small style="font-weight:400;color:#616161;">Papel · Plástico · Vidrio · Metal</small></div>
+            <div class="cat-chip" style="background:#1A1A1A;color:#FFF;">🗑️ No Aprovechables<br><small style="font-weight:400;opacity:.75;">Residuos ordinarios</small></div>
+            <div class="cat-chip" style="background:#1B5E20;color:#FFF;">🌿 Orgánicos<br><small style="font-weight:400;opacity:.75;">Comida · Jardín</small></div>
+            <div class="cat-chip" style="background:#B71C1C;color:#FFF;">⚠️ Especiales / Peligrosos<br><small style="font-weight:400;opacity:.75;">RAEE · Pilas · Medicamentos</small></div>
+        </div>
+
+        <div class="settings-row">
+            <div class="setting-group">
+                <label>Rondas</label>
+                <select id="rounds-setting">
+                    <option value="10">10 ítems</option>
+                    <option value="15" selected>15 ítems</option>
+                    <option value="20">20 ítems</option>
+                    <option value="30">30 ítems</option>
+                </select>
+            </div>
+            <div class="setting-group">
+                <label>Tiempo por ítem</label>
+                <select id="timer-setting">
+                    <option value="0">Sin límite</option>
+                    <option value="15">15 segundos</option>
+                    <option value="30" selected>30 segundos</option>
+                    <option value="45">45 segundos</option>
+                </select>
+            </div>
+        </div>
+
+        <p class="hint-keys" style="margin-bottom:1.25rem;">
+            Atajos de teclado: <kbd>1</kbd> Aprovechable · <kbd>2</kbd> No Aprovechable · <kbd>3</kbd> Orgánico · <kbd>4</kbd> Especial · <kbd>Enter</kbd> Continuar
+        </p>
+
+        <button class="btn-primary" onclick="startGame()">🎮 Comenzar juego</button>
+
+        <div id="history-preview" class="history-preview"></div>
+    </div>
+</div>
+
+<!-- ══════════════════════ GAME SCREEN ══════════════════════ -->
+<div id="game-screen" class="screen">
+    <div class="game-header">
+        <div class="hdr-left">
+            <span class="round-badge" id="round-badge">1 / 15</span>
+            <div class="prog-wrap">
+                <div class="prog-fill" id="prog-fill" style="width:0%"></div>
+            </div>
+        </div>
+        <div class="timer-display" id="timer-display">⏱ 30s</div>
+        <div class="score-display">⭐ <span id="score-val">0</span> pts</div>
+    </div>
+
+    <div class="game-main">
+        <div class="item-card" id="item-card">
+            <span class="item-emoji" id="item-emoji">📰</span>
+            <div class="item-name" id="item-name">Periódico</div>
+            <div class="item-desc" id="item-desc"></div>
+        </div>
+
+        <p class="hint-text">👆 Toca o haz clic en la categoría correcta</p>
+
+        <div class="bins-grid">
+            <div class="bin bin-aprovechable" id="bin-aprovechable" onclick="selectBin('aprovechable')">
+                <span class="bin-key">1</span>
+                <span class="bin-icon">🗑️</span>
+                <div class="bin-label">APROVECHABLES</div>
+                <div class="bin-sublabel">Papel · Cartón · Plástico · Vidrio · Metal</div>
+            </div>
+            <div class="bin bin-no_aprovechable" id="bin-no_aprovechable" onclick="selectBin('no_aprovechable')">
+                <span class="bin-key">2</span>
+                <span class="bin-icon">🗑️</span>
+                <div class="bin-label">NO APROVECHABLES</div>
+                <div class="bin-sublabel">Ordinarios sin valor de reciclaje</div>
+            </div>
+            <div class="bin bin-organico" id="bin-organico" onclick="selectBin('organico')">
+                <span class="bin-key">3</span>
+                <span class="bin-icon">🌿</span>
+                <div class="bin-label">ORGÁNICOS</div>
+                <div class="bin-sublabel">Restos de comida · Poda de jardín</div>
+            </div>
+            <div class="bin bin-especial" id="bin-especial" onclick="selectBin('especial')">
+                <span class="bin-key">4</span>
+                <span class="bin-icon">⚠️</span>
+                <div class="bin-label">ESPECIALES / PELIGROSOS</div>
+                <div class="bin-sublabel">RAEE · Pilas · Medicamentos</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════ RESULTS SCREEN ══════════════════════ -->
+<div id="results-screen" class="screen">
+    <div class="results-card">
+        <div class="results-header">
+            <span class="results-trophy" id="res-trophy">🏆</span>
+            <div class="results-class" id="res-class">Experto en Reciclaje</div>
+            <div style="color:var(--muted);font-size:0.85rem;margin-bottom:0.25rem;">Puntaje final</div>
+            <div class="results-score-big" id="res-score">0 pts</div>
+        </div>
+
+        <div class="section-title">Estadísticas de la partida</div>
+        <div class="stats-grid">
+            <div class="stat-box">
+                <div class="stat-val" id="stat-acc">0%</div>
+                <div class="stat-lbl">Aciertos totales</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-val" id="stat-time">0s</div>
+                <div class="stat-lbl">Tiempo promedio</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-val" id="stat-streak">0</div>
+                <div class="stat-lbl">Racha máxima</div>
+            </div>
+        </div>
+
+        <div class="section-title">Desempeño por categoría</div>
+        <div id="cat-breakdown"></div>
+
+        <div class="section-title">Retroalimentación personalizada</div>
+        <div id="personal-feedback" class="personal-fb"></div>
+
+        <div id="history-section" style="display:none;">
+            <div class="section-title">Historial de partidas (últimas 10)</div>
+            <div id="history-list" class="history-list"></div>
+        </div>
+
+        <div class="results-actions">
+            <button class="btn-primary" onclick="startGame()">🔄 Jugar de nuevo</button>
+            <button class="btn-secondary" onclick="showStartScreen()">🏠 Menú</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════ FEEDBACK OVERLAY ══════════════════════ -->
+<div id="fb-overlay" class="fb-overlay hidden">
+    <div class="fb-card">
+        <span class="fb-icon" id="fb-icon">✅</span>
+        <div class="fb-title correct" id="fb-title">¡Correcto!</div>
+        <div class="fb-pts pos" id="fb-pts">+10 puntos</div>
+        <div class="fb-cat-tag" id="fb-cat-tag">Categoría</div>
+        <div class="fb-explanation" id="fb-exp">Explicación aquí.</div>
+        <button class="btn-continue" id="btn-continue" onclick="continueGame()">Continuar →</button>
+    </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+//  BASE DE DATOS DE RESIDUOS (35 ítems)
+// ═══════════════════════════════════════════════════════════════
+const WASTE_DB = [
+    // ── APROVECHABLES ──────────────────────────────────────────
+    {
+        id: 1, name: "Periódico", emoji: "📰",
+        category: "aprovechable", difficulty: "easy",
+        desc: "Papel de lectura impreso",
+        explanation: "El papel periódico es 100% reciclable. Se transforma en papel nuevo, cartón o material de embalaje. Debe estar seco y limpio."
+    },
+    {
+        id: 2, name: "Botella PET", emoji: "🍶",
+        category: "aprovechable", difficulty: "easy",
+        desc: "Botella de plástico transparente (tipo 1)",
+        explanation: "Las botellas PET son altamente reciclables. Se convierten en fibras textiles o nuevos envases. Deben estar limpias y sin tapa."
+    },
+    {
+        id: 3, name: "Lata de aluminio", emoji: "🧃",
+        category: "aprovechable", difficulty: "easy",
+        desc: "Lata de bebida o conserva de aluminio",
+        explanation: "El aluminio es uno de los materiales más valiosos para reciclar. Se puede refundir infinitas veces usando hasta 95% menos energía que producirlo desde cero."
+    },
+    {
+        id: 4, name: "Botella de vidrio", emoji: "🍾",
+        category: "aprovechable", difficulty: "easy",
+        desc: "Envase de vidrio vacío y limpio",
+        explanation: "El vidrio es 100% reciclable y puede reutilizarse de manera indefinida sin perder calidad. Se convierte en nuevo vidrio o material de construcción."
+    },
+    {
+        id: 5, name: "Cartón limpio", emoji: "📦",
+        category: "aprovechable", difficulty: "easy",
+        desc: "Caja de cartón sin grasa ni humedad",
+        explanation: "El cartón seco y limpio es totalmente reciclable. Se convierte en nuevo cartón o papel. La grasa o humedad lo inutiliza para el reciclaje."
+    },
+    {
+        id: 6, name: "Revista", emoji: "📓",
+        category: "aprovechable", difficulty: "easy",
+        desc: "Revistas y catálogos de papel",
+        explanation: "Las revistas son papel reciclable. Aunque contienen tinta y barniz, los centros de reciclaje pueden procesarlas para obtener papel nuevo."
+    },
+    {
+        id: 7, name: "Lata de conserva", emoji: "🥫",
+        category: "aprovechable", difficulty: "easy",
+        desc: "Envase metálico de alimentos",
+        explanation: "Las latas de hojalata (acero) son completamente reciclables. Deben enjuagarse para eliminar restos de comida antes de depositarlas."
+    },
+    {
+        id: 8, name: "Bolsa plástica limpia", emoji: "🛍️",
+        category: "aprovechable", difficulty: "medium",
+        desc: "Bolsa de plástico sin residuos",
+        explanation: "Las bolsas plásticas limpias (LDPE, tipo 4) son reciclables. Deben estar limpias y secas. Muchos supermercados tienen puntos especiales de recolección."
+    },
+    {
+        id: 9, name: "Frasco de vidrio", emoji: "🫙",
+        category: "aprovechable", difficulty: "easy",
+        desc: "Tarro o frasco de vidrio enjuagado",
+        explanation: "Los frascos de vidrio son reciclables. Deben enjuagarse. No es necesario retirar la tapa metálica, ya que se separa en el proceso industrial."
+    },
+    {
+        id: 10, name: "Chatarra metálica", emoji: "🔩",
+        category: "aprovechable", difficulty: "medium",
+        desc: "Piezas de hierro o acero",
+        explanation: "Los metales ferrosos (hierro, acero) son 100% reciclables y se pueden refundir indefinidamente. Son materia prima valiosa para la industria siderúrgica."
+    },
+
+    // ── NO APROVECHABLES ────────────────────────────────────────
+    {
+        id: 11, name: "Papel higiénico usado", emoji: "🧻",
+        category: "no_aprovechable", difficulty: "easy",
+        desc: "Papel sanitario con residuos corporales",
+        explanation: "El papel higiénico usado NO es reciclable. Está contaminado con materia orgánica y sus fibras son demasiado cortas y sucias para reprocesarse."
+    },
+    {
+        id: 12, name: "Pañal desechable", emoji: "👶",
+        category: "no_aprovechable", difficulty: "easy",
+        desc: "Pañal con residuos biológicos",
+        explanation: "Los pañales contienen residuos biológicos y mezclan plástico, celulosa y gel que no pueden separarse. Son residuos no aprovechables que van al contenedor negro."
+    },
+    {
+        id: 13, name: "Colilla de cigarrillo", emoji: "🚬",
+        category: "no_aprovechable", difficulty: "medium",
+        desc: "Filtro de tabaco usado",
+        explanation: "Las colillas contienen más de 4.000 sustancias tóxicas y el filtro es plástico no reciclable. Van al contenedor negro. Nunca al piso o al desagüe."
+    },
+    {
+        id: 14, name: "Vaso de icopor", emoji: "☕",
+        category: "no_aprovechable", difficulty: "hard", isTramp: true,
+        desc: "Vaso de poliestireno expandido (EPS)",
+        explanation: "⚠️ ¡Trampa frecuente! El icopor/EPS NO es reciclable en Colombia actualmente. Contamina ríos y tarda hasta 500 años en degradarse. Va al contenedor negro."
+    },
+    {
+        id: 15, name: "Papel encerado", emoji: "📄",
+        category: "no_aprovechable", difficulty: "hard", isTramp: true,
+        desc: "Papel recubierto de cera o parafina",
+        explanation: "⚠️ ¡Trampa! El papel encerado NO es reciclable. La capa de cera o parafina impide que las fibras de papel puedan reprocesarse en la planta de reciclaje."
+    },
+    {
+        id: 16, name: "Empaque de snacks", emoji: "🥔",
+        category: "no_aprovechable", difficulty: "hard", isTramp: true,
+        desc: "Empaque metalizado tipo papas fritas",
+        explanation: "⚠️ ¡Trampa! Los empaques metalizados (bicapa plástico+aluminio) NO se pueden reciclar porque sus materiales no pueden separarse. Van al contenedor negro."
+    },
+    {
+        id: 17, name: "Servilleta sucia", emoji: "🤧",
+        category: "no_aprovechable", difficulty: "medium",
+        desc: "Servilleta con restos de comida o uso",
+        explanation: "La servilleta sucia NO es reciclable: está contaminada con grasa o materia orgánica. Incluso limpia, sus fibras son demasiado cortas para el reciclaje."
+    },
+    {
+        id: 18, name: "Cerámica rota", emoji: "🍽️",
+        category: "no_aprovechable", difficulty: "hard", isTramp: true,
+        desc: "Pedazos de platos o macetas de loza",
+        explanation: "⚠️ ¡Trampa! La cerámica/porcelana NO va con el vidrio. Su composición y punto de fusión son distintos; contaminaría el proceso de reciclaje del vidrio."
+    },
+    {
+        id: 19, name: "Caja de pizza sucia", emoji: "🍕",
+        category: "no_aprovechable", difficulty: "hard", isTramp: true,
+        desc: "Cartón impregnado de grasa",
+        explanation: "⚠️ ¡Trampa! El cartón de pizza impregnado de grasa NO es reciclable. La grasa contamina las fibras e impide el proceso. Solo la tapa limpia podría reciclarse."
+    },
+    {
+        id: 20, name: "Esponja de cocina", emoji: "🧽",
+        category: "no_aprovechable", difficulty: "medium",
+        desc: "Esponja usada para lavar vajilla",
+        explanation: "Las esponjas combinan celulosa y materiales abrasivos sintéticos que no se pueden separar para reciclar. Son residuos no aprovechables."
+    },
+
+    // ── ORGÁNICOS ────────────────────────────────────────────────
+    {
+        id: 21, name: "Cáscara de frutas", emoji: "🍌",
+        category: "organico", difficulty: "easy",
+        desc: "Cáscaras de plátano, naranja, mango…",
+        explanation: "Las cáscaras son residuos orgánicos aprovechables perfectos para compostar. Generan abono rico en nutrientes para jardines y cultivos."
+    },
+    {
+        id: 22, name: "Restos de comida", emoji: "🍲",
+        category: "organico", difficulty: "easy",
+        desc: "Sobras de alimentos cocinados",
+        explanation: "Los restos de comida son materia orgánica compostable. El compostaje puede reducir hasta el 50% de los residuos del hogar y produce abono natural."
+    },
+    {
+        id: 23, name: "Hojas y ramas de jardín", emoji: "🍂",
+        category: "organico", difficulty: "easy",
+        desc: "Residuos de poda y jardinería",
+        explanation: "Los residuos de jardín son orgánicos aprovechables. Se pueden compostar o usar como mulch para proteger el suelo y retener humedad."
+    },
+    {
+        id: 24, name: "Borra de café", emoji: "☕",
+        category: "organico", difficulty: "medium",
+        desc: "Residuo del café preparado (molido usado)",
+        explanation: "La borra de café es un excelente residuo orgánico rico en nitrógeno. Se puede compostar o aplicar directamente como fertilizante para plantas."
+    },
+    {
+        id: 25, name: "Cáscara de huevo", emoji: "🥚",
+        category: "organico", difficulty: "medium",
+        desc: "Cascarón de huevo vacío",
+        explanation: "Las cáscaras de huevo son ricas en calcio y perfectas para compostar. Se descomponen mejorando la estructura y el pH del suelo."
+    },
+    {
+        id: 26, name: "Frutas dañadas", emoji: "🍎",
+        category: "organico", difficulty: "easy",
+        desc: "Frutas podridas o en descomposición",
+        explanation: "Las frutas en mal estado son residuos orgánicos ideales para compostaje. Nunca se mezclan con reciclables ni con no aprovechables."
+    },
+    {
+        id: 27, name: "Yerba y pasto cortado", emoji: "🌿",
+        category: "organico", difficulty: "easy",
+        desc: "Césped y hierbas del jardín",
+        explanation: "El pasto cortado y las plantas son orgánicos compostables. Contribuyen a la generación de compost de alta calidad con alto contenido de nitrógeno."
+    },
+
+    // ── ESPECIALES / PELIGROSOS ─────────────────────────────────
+    {
+        id: 28, name: "Pila usada", emoji: "🔋",
+        category: "especial", difficulty: "easy",
+        desc: "Batería AA, AAA, de botón o recargable",
+        explanation: "Las pilas contienen metales pesados (mercurio, cadmio, plomo). Son tóxicas y deben entregarse en puntos de recolección POSCONSUMO o RAEE. Nunca con la basura ordinaria."
+    },
+    {
+        id: 29, name: "Celular dañado", emoji: "📱",
+        category: "especial", difficulty: "easy",
+        desc: "Teléfono móvil o tablet en desuso",
+        explanation: "Los dispositivos electrónicos (RAEE) contienen materiales valiosos y sustancias tóxicas. Por Res. 1512/2010 deben entregarse en puntos de recolección autorizados."
+    },
+    {
+        id: 30, name: "Medicamento vencido", emoji: "💊",
+        category: "especial", difficulty: "medium",
+        desc: "Pastillas, jarabes o fármacos caducados",
+        explanation: "Los medicamentos vencidos son peligrosos para la salud y el ambiente. Las droguerías y farmacias de Colombia tienen puntos POSCONSUMO gratuitos para recibirlos."
+    },
+    {
+        id: 31, name: "Bombillo ahorrador", emoji: "💡",
+        category: "especial", difficulty: "hard", isTramp: true,
+        desc: "Bombillo fluorescente compacto (CFL)",
+        explanation: "⚠️ ¡Trampa! Los bombillos ahorradores contienen mercurio y son residuos peligrosos. No van con la basura ordinaria. Llévelos a puntos de recolección especializados."
+    },
+    {
+        id: 32, name: "Aceite de cocina usado", emoji: "🫗",
+        category: "especial", difficulty: "medium", isTramp: true,
+        desc: "Aceite vegetal usado para freír",
+        explanation: "El aceite usado contamina gravemente el agua (1 litro puede contaminar 1.000 litros). Recógelo en un recipiente y llévalo a puntos de recolección para biodiesel o jabón."
+    },
+    {
+        id: 33, name: "Jeringa usada", emoji: "💉",
+        category: "especial", difficulty: "easy",
+        desc: "Material biosanitario cortopunzante",
+        explanation: "Las jeringas usadas son residuos biosanitarios peligrosos. Deben depositarse en contenedores especiales llamados 'guardianes'. Nunca en la basura ordinaria."
+    },
+    {
+        id: 34, name: "Tóner de impresora", emoji: "🖨️",
+        category: "especial", difficulty: "hard", isTramp: true,
+        desc: "Cartucho de impresora vacío",
+        explanation: "⚠️ ¡Trampa! Los cartuchos de tóner contienen partículas de carbono y metales. Muchos fabricantes tienen programas de devolución POSCONSUMO. No van con residuos ordinarios."
+    },
+    {
+        id: 35, name: "Aerosol de pintura", emoji: "🎨",
+        category: "especial", difficulty: "hard", isTramp: true,
+        desc: "Lata de spray con residuos de pintura",
+        explanation: "⚠️ ¡Trampa! Los aerosoles con residuos de pintura o químicos son peligrosos. Deben entregarse en puntos POSCONSUMO. Nunca perforarlos ni tirarlos con la basura común."
+    },
+];
+
+// ═══════════════════════════════════════════════════════════════
+//  ESTADO DEL JUEGO
+// ═══════════════════════════════════════════════════════════════
+const STATE = {
+    score: 0, round: 0, totalRounds: 15,
+    timerSec: 30, timeLeft: 30, timerInterval: null,
+    itemStartTime: null, currentItem: null,
+    usedIds: [], answers: [],
+    streak: 0, maxStreak: 0, responseTimes: [],
+    disabled: false,
+    catStats: {
+        aprovechable:  { correct: 0, total: 0 },
+        no_aprovechable: { correct: 0, total: 0 },
+        organico:      { correct: 0, total: 0 },
+        especial:      { correct: 0, total: 0 }
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════
+//  LÓGICA DE JUEGO
+// ═══════════════════════════════════════════════════════════════
+function startGame() {
+    const rounds = parseInt(document.getElementById('rounds-setting')?.value ?? 15);
+    const timer  = parseInt(document.getElementById('timer-setting')?.value  ?? 30);
+
+    Object.assign(STATE, {
+        score: 0, round: 0, totalRounds: rounds,
+        timerSec: timer, timeLeft: timer,
+        timerInterval: null, itemStartTime: null, currentItem: null,
+        usedIds: [], answers: [],
+        streak: 0, maxStreak: 0, responseTimes: [],
+        disabled: false,
+        catStats: {
+            aprovechable:    { correct: 0, total: 0 },
+            no_aprovechable: { correct: 0, total: 0 },
+            organico:        { correct: 0, total: 0 },
+            especial:        { correct: 0, total: 0 }
+        }
+    });
+
+    showScreen('game-screen');
+    refreshScore();
+    nextItem();
+}
+
+function nextItem() {
+    STATE.disabled = false;
+    hideFB();
+
+    if (STATE.round >= STATE.totalRounds) { endGame(); return; }
+    STATE.round++;
+
+    // Select item with progressive difficulty
+    let pool = WASTE_DB.filter(w => !STATE.usedIds.includes(w.id));
+    if (pool.length === 0) { STATE.usedIds = []; pool = [...WASTE_DB]; }
+
+    const frac = STATE.round / STATE.totalRounds;
+    let filtered = pool;
+    if (frac < 0.4)       filtered = pool.filter(w => w.difficulty === 'easy') || pool;
+    else if (frac < 0.72) filtered = pool.filter(w => w.difficulty !== 'hard') || pool;
+    if (filtered.length < 2) filtered = pool;
+
+    const item = filtered[Math.floor(Math.random() * filtered.length)];
+    STATE.currentItem = item;
+    STATE.usedIds.push(item.id);
+    STATE.itemStartTime = Date.now();
+
+    // Render item
+    document.getElementById('item-emoji').textContent = item.emoji;
+    document.getElementById('item-name').textContent  = item.name;
+    document.getElementById('item-desc').textContent  = item.desc ?? '';
+
+    // Clear old badges
+    document.querySelectorAll('.trap-badge, .diff-badge').forEach(b => b.remove());
+
+    const card = document.getElementById('item-card');
+    if (item.isTramp) {
+        const tb = document.createElement('div');
+        tb.className = 'trap-badge'; tb.textContent = '⚠️ ¡Cuidado!';
+        card.appendChild(tb);
+    }
+    const db = document.createElement('div');
+    db.className = `diff-badge diff-${item.difficulty}`;
+    db.textContent = { easy: '🟢 Fácil', medium: '🟡 Medio', hard: '🔴 Difícil' }[item.difficulty] ?? '';
+    card.appendChild(db);
+
+    // Header
+    document.getElementById('round-badge').textContent = `${STATE.round} / ${STATE.totalRounds}`;
+    document.getElementById('prog-fill').style.width = ((STATE.round - 1) / STATE.totalRounds * 100) + '%';
+
+    // Timer
+    clearInterval(STATE.timerInterval);
+    if (STATE.timerSec > 0) {
+        STATE.timeLeft = STATE.timerSec;
+        renderTimer();
+        STATE.timerInterval = setInterval(tickTimer, 1000);
+    } else {
+        const td = document.getElementById('timer-display');
+        td.textContent = '⏱ ∞'; td.className = 'timer-display';
+    }
+}
+
+function tickTimer() {
+    STATE.timeLeft--;
+    renderTimer();
+    if (STATE.timeLeft <= 0) { clearInterval(STATE.timerInterval); onTimeout(); }
+}
+
+function renderTimer() {
+    const el = document.getElementById('timer-display');
+    el.textContent = `⏱ ${STATE.timeLeft}s`;
+    el.className = 'timer-display' + (STATE.timeLeft <= 5 ? ' warning' : '');
+}
+
+function onTimeout() {
+    if (STATE.disabled) return;
+    STATE.disabled = true;
+    const item = STATE.currentItem;
+    const rt = STATE.timerSec;
+    STATE.catStats[item.category].total++;
+    STATE.streak = 0;
+    STATE.responseTimes.push(rt);
+    const pts = -3;
+    STATE.score = Math.max(0, STATE.score + pts);
+    refreshScore();
+    STATE.answers.push({ item, correct: false, points: pts, rt });
+    showFB(false, item, pts, true);
+}
+
+function selectBin(cat) {
+    if (STATE.disabled) return;
+    STATE.disabled = true;
+    clearInterval(STATE.timerInterval);
+
+    const item   = STATE.currentItem;
+    const correct = cat === item.category;
+    const rt     = (Date.now() - STATE.itemStartTime) / 1000;
+    STATE.responseTimes.push(rt);
+
+    // Flash bins
+    const clickedEl  = document.getElementById('bin-' + cat);
+    const correctEl  = document.getElementById('bin-' + item.category);
+    if (clickedEl)  { clickedEl.classList.add(correct ? 'correct-flash' : 'wrong-flash'); setTimeout(() => clickedEl.classList.remove('correct-flash','wrong-flash'), 600); }
+    if (!correct && correctEl) { setTimeout(() => { correctEl.classList.add('correct-flash'); setTimeout(() => correctEl.classList.remove('correct-flash'), 600); }, 220); }
+
+    // Scoring
+    let pts;
+    if (correct) {
+        pts = 10;
+        if (STATE.timerSec > 0) { if (rt < 5) pts += 5; else if (rt < 10) pts += 2; }
+        STATE.streak++;
+        STATE.maxStreak = Math.max(STATE.maxStreak, STATE.streak);
+        if (STATE.streak >= 3) pts += 3;
+        STATE.catStats[item.category].correct++;
+    } else {
+        pts = -5;
+        STATE.streak = 0;
+    }
+    STATE.catStats[item.category].total++;
+    STATE.score = Math.max(0, STATE.score + pts);
+    refreshScore();
+    STATE.answers.push({ item, correct, selectedCat: cat, points: pts, rt });
+
+    if (STATE.streak >= 3) showStreakToast(STATE.streak);
+    showFB(correct, item, pts, false);
+}
+
+function showStreakToast(n) {
+    document.querySelector('.streak-toast')?.remove();
+    const el = document.createElement('div');
+    el.className = 'streak-toast'; el.textContent = `🔥 ¡Racha x${n}!`;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 2200);
+}
+
+function refreshScore() {
+    document.getElementById('score-val').textContent = STATE.score;
+}
+
+// ─────────────── FEEDBACK OVERLAY ───────────────
+const CAT_META = {
+    aprovechable:    { label: 'Aprovechable (Blanco)',          bg: '#F5F5F5', color: '#1A1A1A', border: '#BDBDBD' },
+    no_aprovechable: { label: 'No Aprovechable (Negro)',        bg: '#1A1A1A', color: '#FFF',    border: '#1A1A1A' },
+    organico:        { label: 'Orgánico (Verde)',               bg: '#1B5E20', color: '#FFF',    border: '#1B5E20' },
+    especial:        { label: 'Especial / Peligroso (Rojo)',    bg: '#B71C1C', color: '#FFF',    border: '#B71C1C' },
+};
+
+function showFB(correct, item, pts, isTimeout) {
+    if (isTimeout) {
+        document.getElementById('fb-icon').textContent   = '⏰';
+        document.getElementById('fb-title').textContent  = '¡Tiempo agotado!';
+        document.getElementById('fb-title').className    = 'fb-title timeout';
+        document.getElementById('fb-pts').textContent    = `${pts} puntos`;
+        document.getElementById('fb-pts').className      = 'fb-pts neg';
+    } else if (correct) {
+        document.getElementById('fb-icon').textContent   = pts > 12 ? '🌟' : '✅';
+        document.getElementById('fb-title').textContent  = pts > 12 ? '¡Excelente!' : '¡Correcto!';
+        document.getElementById('fb-title').className    = 'fb-title correct';
+        document.getElementById('fb-pts').textContent    = `+${pts} puntos`;
+        document.getElementById('fb-pts').className      = 'fb-pts pos';
+    } else {
+        document.getElementById('fb-icon').textContent   = '❌';
+        document.getElementById('fb-title').textContent  = '¡Incorrecto!';
+        document.getElementById('fb-title').className    = 'fb-title wrong';
+        document.getElementById('fb-pts').textContent    = `${pts} puntos`;
+        document.getElementById('fb-pts').className      = 'fb-pts neg';
+    }
+
+    const meta = CAT_META[item.category];
+    const tag = document.getElementById('fb-cat-tag');
+    tag.textContent = `🗑️ Categoría correcta: ${meta.label}`;
+    tag.style.cssText = `background:${meta.bg};color:${meta.color};border-color:${meta.border};`;
+
+    document.getElementById('fb-exp').textContent = item.explanation;
+    document.getElementById('fb-overlay').classList.remove('hidden');
+
+    // Countdown on continue button
+    const btn = document.getElementById('btn-continue');
+    clearInterval(btn._cd);
+    let t = 3;
+    btn.textContent = `Continuar → (${t})`;
+    btn._cd = setInterval(() => {
+        t--;
+        if (t <= 0) { clearInterval(btn._cd); btn.textContent = 'Continuar →'; }
+        else btn.textContent = `Continuar → (${t})`;
+    }, 1000);
+}
+
+function hideFB() { document.getElementById('fb-overlay').classList.add('hidden'); }
+
+function continueGame() {
+    clearInterval(document.getElementById('btn-continue')._cd);
+    hideFB();
+    nextItem();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  FIN DEL JUEGO
+// ═══════════════════════════════════════════════════════════════
+function endGame() {
+    clearInterval(STATE.timerInterval);
+    hideFB();
+
+    const total   = STATE.answers.length;
+    const correct = STATE.answers.filter(a => a.correct).length;
+    const acc     = total > 0 ? (correct / total * 100) : 0;
+    const avgRt   = STATE.responseTimes.length
+        ? STATE.responseTimes.reduce((s, v) => s + v, 0) / STATE.responseTimes.length
+        : 0;
+
+    const cls = classify(acc);
+
+    saveHistory({ date: new Date().toLocaleDateString('es-CO'), score: STATE.score, accuracy: Math.round(acc), classification: cls.title, rounds: total });
+
+    // Enviar sesión a Supabase
+    sendToSupabase({
+        score:             STATE.score,
+        total_rounds:      total,
+        correct_answers:   correct,
+        accuracy:          parseFloat(acc.toFixed(2)),
+        avg_response_time: parseFloat(avgRt.toFixed(3)),
+        max_streak:        STATE.maxStreak,
+        classification:    cls.title,
+        timer_seconds:     STATE.timerSec,
+        apr_correct:       STATE.catStats.aprovechable.correct,
+        apr_total:         STATE.catStats.aprovechable.total,
+        noapr_correct:     STATE.catStats.no_aprovechable.correct,
+        noapr_total:       STATE.catStats.no_aprovechable.total,
+        org_correct:       STATE.catStats.organico.correct,
+        org_total:         STATE.catStats.organico.total,
+        esp_correct:       STATE.catStats.especial.correct,
+        esp_total:         STATE.catStats.especial.total
+    });
+
+    showScreen('results-screen');
+
+    document.getElementById('res-trophy').textContent = cls.trophy;
+    document.getElementById('res-class').textContent  = cls.title;
+    document.getElementById('res-score').textContent  = STATE.score + ' pts';
+    document.getElementById('stat-acc').textContent   = Math.round(acc) + '%';
+    document.getElementById('stat-time').textContent  = avgRt.toFixed(1) + 's';
+    document.getElementById('stat-streak').textContent = STATE.maxStreak;
+
+    renderCatBreakdown();
+    renderPersonalFB(cls);
+    renderHistoryPanel();
+}
+
+function classify(acc) {
+    if (acc >= 90) return { trophy: '🏆', title: 'Experto en Reciclaje',        msg: '¡Felicitaciones! Dominas la clasificación de residuos según el PGIRS Colombia.' };
+    if (acc >= 75) return { trophy: '🥇', title: 'Reciclador Avanzado',          msg: 'Excelente manejo de categorías. Con un poco más de práctica alcanzarás la perfección.' };
+    if (acc >= 60) return { trophy: '🥈', title: 'Nivel Intermedio',             msg: 'Buen inicio. Refuerza las categorías donde tuviste más errores.' };
+    if (acc >= 40) return { trophy: '🥉', title: 'Reciclador Principiante',      msg: 'Aún hay mucho por aprender. Revisa las categorías del PGIRS y vuelve a intentarlo.' };
+    return           { trophy: '📚', title: 'Necesita Reforzar Conceptos', msg: 'No te desanimes. La clasificación correcta protege el medioambiente. ¡Sigue practicando!' };
+}
+
+function renderCatBreakdown() {
+    const cats = [
+        { key: 'aprovechable',    label: 'Aprovechables',          color: '#4CAF50' },
+        { key: 'no_aprovechable', label: 'No Aprovechables',       color: '#424242' },
+        { key: 'organico',        label: 'Orgánicos',              color: '#2E7D32' },
+        { key: 'especial',        label: 'Especiales / Peligrosos',color: '#C62828' },
+    ];
+
+    document.getElementById('cat-breakdown').innerHTML = cats.map(c => {
+        const s = STATE.catStats[c.key];
+        const pct = s.total > 0 ? Math.round(s.correct / s.total * 100) : null;
+        return `
+            <div class="cat-bar">
+                <div class="cat-bar-hdr">
+                    <span class="cat-bar-lbl">${c.label}</span>
+                    <span class="cat-bar-pct" style="color:${c.color}">${pct !== null ? pct + '%' : 'N/A'} (${s.correct}/${s.total})</span>
+                </div>
+                <div class="cat-bar-track">
+                    <div class="cat-bar-fill" id="fill-${c.key}" style="background:${c.color};width:0%"></div>
+                </div>
+            </div>`;
+    }).join('');
+
+    // Animate after paint
+    setTimeout(() => cats.forEach(c => {
+        const s = STATE.catStats[c.key];
+        const pct = s.total > 0 ? Math.round(s.correct / s.total * 100) : 0;
+        const el = document.getElementById('fill-' + c.key);
+        if (el) el.style.width = pct + '%';
+    }), 80);
+}
+
+function renderPersonalFB(cls) {
+    const msgs = [`🎯 ${cls.msg}`];
+
+    const catLabels = { aprovechable: 'Aprovechables', no_aprovechable: 'No Aprovechables', organico: 'Orgánicos', especial: 'Especiales/Peligrosos' };
+    const worst = Object.entries(STATE.catStats)
+        .filter(([, s]) => s.total > 0 && s.correct / s.total < 0.7)
+        .sort(([, a], [, b]) => (a.correct / a.total) - (b.correct / b.total))
+        .map(([k]) => catLabels[k]);
+
+    if (worst.length) msgs.push(`⚠️ Refuerza especialmente: ${worst.join(', ')}.`);
+
+    const trampMissed = STATE.answers.filter(a => !a.correct && a.item.isTramp);
+    if (trampMissed.length) {
+        msgs.push(`💡 Cuidado con los ítems trampa: ${trampMissed.map(a => a.item.name).join(', ')}. Parecen reciclables pero no lo son.`);
+    }
+
+    if (STATE.maxStreak >= 5) msgs.push(`🔥 ¡Increíble racha de ${STATE.maxStreak} respuestas correctas consecutivas!`);
+
+    document.getElementById('personal-feedback').innerHTML = msgs.map(m => `<div class="fb-msg">• ${m}</div>`).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  SUPABASE — configuración
+//  Reemplaza ANON_KEY con la clave anon/public de:
+//  Supabase Dashboard → Settings → API Keys → Legacy → anon/public
+// ═══════════════════════════════════════════════════════════════
+const SUPABASE_URL  = 'https://jxfziljxlknddvoscntl.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4ZnppbGp4bGtuZGR2b3NjbnRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4ODEwODEsImV4cCI6MjEwMzQ1NzA4MX0.I953G7Nf7qxgJ0luCb8xjizbrwIZclgE4R_ovN4DKqE';
+
+async function sendToSupabase(payload) {
+    if (SUPABASE_ANON === 'PASTE_YOUR_ANON_KEY_HERE') return; // no configurada aún
+    try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/game_sessions`, {
+            method:  'POST',
+            headers: {
+                'Content-Type':  'application/json',
+                'apikey':        SUPABASE_ANON,
+                'Authorization': `Bearer ${SUPABASE_ANON}`,
+                'Prefer':        'return=minimal'
+            },
+            body: JSON.stringify(payload)
+        });
+        if (!res.ok) console.warn('Supabase insert error:', res.status, await res.text());
+    } catch (e) { console.warn('Supabase fetch error:', e); }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  HISTORIAL (localStorage)
+// ═══════════════════════════════════════════════════════════════
+function saveHistory(entry) {
+    try {
+        const h = JSON.parse(localStorage.getItem('reciclaYaHist') || '[]');
+        h.unshift(entry);
+        if (h.length > 10) h.length = 10;
+        localStorage.setItem('reciclaYaHist', JSON.stringify(h));
+    } catch (_) {}
+}
+
+function getHistory() {
+    try { return JSON.parse(localStorage.getItem('reciclaYaHist') || '[]'); }
+    catch (_) { return []; }
+}
+
+function renderHistoryPanel() {
+    const hist = getHistory();
+    const section = document.getElementById('history-section');
+    if (hist.length <= 1) { section.style.display = 'none'; return; }
+    section.style.display = 'block';
+    document.getElementById('history-list').innerHTML = hist.map((h, i) => `
+        <div class="history-item">
+            <span>${i === 0 ? '🆕 ' : ''}${h.date} · ${h.rounds} ítems</span>
+            <span><span class="history-score">${h.score} pts</span> · ${h.accuracy}% · ${h.classification}</span>
+        </div>`).join('');
+}
+
+function renderHistoryPreview() {
+    const hist = getHistory();
+    const c = document.getElementById('history-preview');
+    if (!c || hist.length === 0) return;
+    c.innerHTML = `<div class="history-preview-title">Última partida</div>
+        <div class="history-preview-item">
+            <span>${hist[0].date}</span>
+            <span style="font-weight:700;color:#1B5E20;">${hist[0].score} pts · ${hist[0].accuracy}% · ${hist[0].classification}</span>
+        </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  NAVEGACIÓN
+// ═══════════════════════════════════════════════════════════════
+function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0, 0);
+}
+
+function showStartScreen() {
+    showScreen('start-screen');
+    renderHistoryPreview();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+    renderHistoryPreview();
+
+    const KEY_MAP = { '1': 'aprovechable', '2': 'no_aprovechable', '3': 'organico', '4': 'especial' };
+    document.addEventListener('keydown', e => {
+        const gameActive = document.getElementById('game-screen').classList.contains('active');
+        const fbVisible  = !document.getElementById('fb-overlay').classList.contains('hidden');
+
+        if (gameActive && !fbVisible && KEY_MAP[e.key]) selectBin(KEY_MAP[e.key]);
+        if (fbVisible  && e.key === 'Enter') continueGame();
+    });
+});
+</script>
+</body>
+</html>
