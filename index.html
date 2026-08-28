@@ -597,6 +597,47 @@
         }
         .results-actions button { flex: 1; min-width: 120px; }
 
+        /* ── FORMULARIO DE REGISTRO ── */
+        .reg-form {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+
+        .reg-group { display: flex; flex-direction: column; gap: 0.3rem; }
+
+        .reg-group label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .reg-group input[type="text"] {
+            padding: 0.625rem 0.875rem;
+            border-radius: 8px;
+            border: 2px solid #E0E0E0;
+            background: white;
+            font-size: 1rem;
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.15s;
+            width: 100%;
+        }
+        .reg-group input[type="text"]:focus { border-color: var(--primary-light); }
+        .reg-group input[type="text"].input-error { border-color: #D32F2F; }
+
+        .reg-error {
+            font-size: 0.75rem;
+            color: #D32F2F;
+            font-weight: 600;
+            display: none;
+        }
+        .reg-error.visible { display: block; }
+
         /* ── RESPONSIVE ── */
         @media (max-width: 480px) {
             .game-title { font-size: 2rem; }
@@ -628,6 +669,19 @@
             <div class="cat-chip" style="background:#1A1A1A;color:#FFF;">🗑️ No Aprovechables<br><small style="font-weight:400;opacity:.75;">Residuos ordinarios</small></div>
             <div class="cat-chip" style="background:#1B5E20;color:#FFF;">🌿 Orgánicos<br><small style="font-weight:400;opacity:.75;">Comida · Jardín</small></div>
             <div class="cat-chip" style="background:#B71C1C;color:#FFF;">⚠️ Especiales / Peligrosos<br><small style="font-weight:400;opacity:.75;">RAEE · Pilas · Medicamentos</small></div>
+        </div>
+
+        <div class="reg-form">
+            <div class="reg-group">
+                <label for="input-nombre">Nombre completo</label>
+                <input type="text" id="input-nombre" placeholder="Ej: María García López" maxlength="100" autocomplete="name">
+                <span class="reg-error" id="error-nombre">Por favor ingresa tu nombre completo</span>
+            </div>
+            <div class="reg-group">
+                <label for="input-programa">Programa académico</label>
+                <input type="text" id="input-programa" placeholder="Ej: Ingeniería Ambiental" maxlength="100">
+                <span class="reg-error" id="error-programa">Por favor ingresa tu programa académico</span>
+            </div>
         </div>
 
         <div class="settings-row">
@@ -1002,6 +1056,7 @@ const STATE = {
     usedIds: [], answers: [],
     streak: 0, maxStreak: 0, responseTimes: [],
     disabled: false,
+    nombre: '', programa: '',
     catStats: {
         aprovechable:  { correct: 0, total: 0 },
         no_aprovechable: { correct: 0, total: 0 },
@@ -1014,10 +1069,30 @@ const STATE = {
 //  LÓGICA DE JUEGO
 // ═══════════════════════════════════════════════════════════════
 function startGame() {
+    // Validar registro
+    const nombre   = document.getElementById('input-nombre').value.trim();
+    const programa = document.getElementById('input-programa').value.trim();
+    let valid = true;
+
+    const errNombre   = document.getElementById('error-nombre');
+    const errPrograma = document.getElementById('error-programa');
+    const inNombre    = document.getElementById('input-nombre');
+    const inPrograma  = document.getElementById('input-programa');
+
+    if (!nombre) {
+        errNombre.classList.add('visible'); inNombre.classList.add('input-error'); valid = false;
+    } else { errNombre.classList.remove('visible'); inNombre.classList.remove('input-error'); }
+
+    if (!programa) {
+        errPrograma.classList.add('visible'); inPrograma.classList.add('input-error'); valid = false;
+    } else { errPrograma.classList.remove('visible'); inPrograma.classList.remove('input-error'); }
+
+    if (!valid) return;
+
     const rounds = parseInt(document.getElementById('rounds-setting')?.value ?? 15);
     const timer  = parseInt(document.getElementById('timer-setting')?.value  ?? 30);
 
-    Object.assign(STATE, {
+    Object.assign(STATE, { nombre, programa,
         score: 0, round: 0, totalRounds: rounds,
         timerSec: timer, timeLeft: timer,
         timerInterval: null, itemStartTime: null, currentItem: null,
@@ -1248,6 +1323,8 @@ function endGame() {
 
     // Enviar sesión a Supabase
     sendToSupabase({
+        nombre:            STATE.nombre,
+        programa:          STATE.programa,
         score:             STATE.score,
         total_rounds:      total,
         correct_answers:   correct,
