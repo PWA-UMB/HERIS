@@ -616,7 +616,8 @@
             letter-spacing: 0.05em;
         }
 
-        .reg-group input[type="text"] {
+        .reg-group input[type="text"],
+        .reg-group input[type="email"] {
             padding: 0.625rem 0.875rem;
             border-radius: 8px;
             border: 2px solid #E0E0E0;
@@ -627,8 +628,10 @@
             transition: border-color 0.15s;
             width: 100%;
         }
-        .reg-group input[type="text"]:focus { border-color: var(--primary-light); }
-        .reg-group input[type="text"].input-error { border-color: #D32F2F; }
+        .reg-group input[type="text"]:focus,
+        .reg-group input[type="email"]:focus { border-color: var(--primary-light); }
+        .reg-group input[type="text"].input-error,
+        .reg-group input[type="email"].input-error { border-color: #D32F2F; }
 
         .reg-error {
             font-size: 0.75rem;
@@ -637,6 +640,99 @@
             display: none;
         }
         .reg-error.visible { display: block; }
+
+        /* ── CONSENT ── */
+        .consent-group { margin-top: 0.25rem; }
+        .consent-label {
+            display: flex;
+            gap: 0.6rem;
+            align-items: flex-start;
+            cursor: pointer;
+            font-size: 0.82rem;
+            color: var(--muted);
+            line-height: 1.4;
+            text-align: left;
+        }
+        .consent-label input[type="checkbox"] {
+            margin-top: 0.15rem;
+            flex-shrink: 0;
+            width: 16px;
+            height: 16px;
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: 0 4px 16px rgba(27,94,32,0.2) !important;
+        }
+
+        .retake-warning {
+            background: #FFF3E0;
+            border-left: 4px solid #FF9800;
+            border-radius: 0 8px 8px 0;
+            padding: 0.75rem 1rem;
+            font-size: 0.82rem;
+            color: #E65100;
+            text-align: left;
+            display: none;
+            margin-bottom: 0.75rem;
+        }
+        .retake-warning.visible { display: block; }
+
+        /* ── BINS AS BUTTONS ── */
+        button.bin {
+            font-family: inherit;
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+        }
+        button.bin:focus-visible {
+            outline: 3px solid #4CAF50;
+            outline-offset: 3px;
+        }
+
+        /* ── PAUSE BUTTON ── */
+        .btn-pause {
+            background: transparent;
+            border: 2px solid #E0E0E0;
+            border-radius: 8px;
+            padding: 0.3rem 0.75rem;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--muted);
+            cursor: pointer;
+            transition: all 0.12s;
+        }
+        .btn-pause:hover { border-color: var(--primary); color: var(--primary); }
+
+        /* ── PAUSE OVERLAY ── */
+        .pause-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.72);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 300;
+            padding: 1rem;
+        }
+        .pause-overlay.hidden { display: none; }
+        .pause-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 2rem 1.75rem;
+            max-width: 360px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+        }
+        .pause-icon { font-size: 3rem; margin-bottom: 0.5rem; display: block; }
+        .pause-title { font-size: 1.5rem; font-weight: 900; margin-bottom: 0.5rem; color: var(--text); }
+        .pause-subtitle { font-size: 0.88rem; color: var(--muted); margin-bottom: 0; }
+        .pause-actions { display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1.25rem; }
 
         /* ── RESPONSIVE ── */
         @media (max-width: 480px) {
@@ -682,6 +778,21 @@
                 <input type="text" id="input-programa" placeholder="Ej: Ingeniería Ambiental" maxlength="100">
                 <span class="reg-error" id="error-programa">Por favor ingresa tu programa académico</span>
             </div>
+            <div class="reg-group">
+                <label for="input-email">Correo institucional UMB</label>
+                <input type="email" id="input-email" placeholder="Ej: m.garcia@umb.edu.co" maxlength="100" autocomplete="email">
+                <span class="reg-error" id="error-email">Ingresa tu correo institucional @umb.edu.co</span>
+            </div>
+            <div class="reg-group consent-group">
+                <label class="consent-label">
+                    <input type="checkbox" id="input-consent">
+                    <span>Acepto que mis datos (nombre, programa, correo y resultados de esta actividad) sean usados con fines exclusivamente académicos para el trabajo de grado EcoUMB (Ley 1581/2012 — Tratamiento de datos personales).</span>
+                </label>
+                <span class="reg-error" id="error-consent">Debes aceptar el tratamiento de datos para continuar</span>
+            </div>
+            <div class="retake-warning" id="retake-warning">
+                ⚠️ Este correo ya tiene una sesión registrada. Esta partida quedará marcada como reintento y será excluida del análisis principal.
+            </div>
         </div>
 
         <div class="settings-row">
@@ -709,7 +820,7 @@
             Atajos de teclado: <kbd>1</kbd> Aprovechable · <kbd>2</kbd> No Aprovechable · <kbd>3</kbd> Orgánico · <kbd>4</kbd> Especial · <kbd>Enter</kbd> Continuar
         </p>
 
-        <button class="btn-primary" onclick="startGame()">🎮 Comenzar juego</button>
+        <button class="btn-primary" id="btn-start" onclick="startGame()" disabled>🎮 Comenzar juego</button>
 
         <div id="history-preview" class="history-preview"></div>
     </div>
@@ -726,6 +837,7 @@
         </div>
         <div class="timer-display" id="timer-display">⏱ 30s</div>
         <div class="score-display">⭐ <span id="score-val">0</span> pts</div>
+        <button class="btn-pause" onclick="pauseGame()" aria-label="Pausar juego">⏸ Pausa</button>
     </div>
 
     <div class="game-main">
@@ -738,30 +850,30 @@
         <p class="hint-text">👆 Toca o haz clic en la categoría correcta</p>
 
         <div class="bins-grid">
-            <div class="bin bin-aprovechable" id="bin-aprovechable" onclick="selectBin('aprovechable')">
-                <span class="bin-key">1</span>
-                <span class="bin-icon">🗑️</span>
+            <button type="button" class="bin bin-aprovechable" id="bin-aprovechable" onclick="selectBin('aprovechable')" aria-label="Aprovechables: papel, cartón, plástico, vidrio y metal">
+                <span class="bin-key" aria-hidden="true">1</span>
+                <span class="bin-icon" aria-hidden="true">🗑️</span>
                 <div class="bin-label">APROVECHABLES</div>
                 <div class="bin-sublabel">Papel · Cartón · Plástico · Vidrio · Metal</div>
-            </div>
-            <div class="bin bin-no_aprovechable" id="bin-no_aprovechable" onclick="selectBin('no_aprovechable')">
-                <span class="bin-key">2</span>
-                <span class="bin-icon">🗑️</span>
+            </button>
+            <button type="button" class="bin bin-no_aprovechable" id="bin-no_aprovechable" onclick="selectBin('no_aprovechable')" aria-label="No aprovechables: residuos ordinarios sin valor de reciclaje">
+                <span class="bin-key" aria-hidden="true">2</span>
+                <span class="bin-icon" aria-hidden="true">🗑️</span>
                 <div class="bin-label">NO APROVECHABLES</div>
                 <div class="bin-sublabel">Ordinarios sin valor de reciclaje</div>
-            </div>
-            <div class="bin bin-organico" id="bin-organico" onclick="selectBin('organico')">
-                <span class="bin-key">3</span>
-                <span class="bin-icon">🌿</span>
+            </button>
+            <button type="button" class="bin bin-organico" id="bin-organico" onclick="selectBin('organico')" aria-label="Orgánicos: restos de comida y poda de jardín">
+                <span class="bin-key" aria-hidden="true">3</span>
+                <span class="bin-icon" aria-hidden="true">🌿</span>
                 <div class="bin-label">ORGÁNICOS</div>
                 <div class="bin-sublabel">Restos de comida · Poda de jardín</div>
-            </div>
-            <div class="bin bin-especial" id="bin-especial" onclick="selectBin('especial')">
-                <span class="bin-key">4</span>
-                <span class="bin-icon">⚠️</span>
+            </button>
+            <button type="button" class="bin bin-especial" id="bin-especial" onclick="selectBin('especial')" aria-label="Especiales o peligrosos: RAEE, pilas y medicamentos">
+                <span class="bin-key" aria-hidden="true">4</span>
+                <span class="bin-icon" aria-hidden="true">⚠️</span>
                 <div class="bin-label">ESPECIALES / PELIGROSOS</div>
                 <div class="bin-sublabel">RAEE · Pilas · Medicamentos</div>
-            </div>
+            </button>
         </div>
     </div>
 </div>
@@ -804,8 +916,21 @@
         </div>
 
         <div class="results-actions">
-            <button class="btn-primary" onclick="startGame()">🔄 Jugar de nuevo</button>
+            <button class="btn-primary" onclick="startGame(true)">🔄 Jugar de nuevo</button>
             <button class="btn-secondary" onclick="showStartScreen()">🏠 Menú</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════ PAUSE OVERLAY ══════════════════════ -->
+<div id="pause-overlay" class="pause-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="pause-title">
+    <div class="pause-card">
+        <span class="pause-icon" aria-hidden="true">⏸️</span>
+        <div class="pause-title" id="pause-title">Juego pausado</div>
+        <p class="pause-subtitle">Tu progreso está guardado en memoria.</p>
+        <div class="pause-actions">
+            <button class="btn-primary" onclick="resumeGame()">▶ Continuar jugando</button>
+            <button class="btn-secondary" onclick="quitGame()">🏠 Salir sin guardar</button>
         </div>
     </div>
 </div>
@@ -1053,10 +1178,10 @@ const STATE = {
     score: 0, round: 0, totalRounds: 15,
     timerSec: 30, timeLeft: 30, timerInterval: null,
     itemStartTime: null, currentItem: null,
-    usedIds: [], answers: [],
+    answers: [], deck: [],
     streak: 0, maxStreak: 0, responseTimes: [],
-    disabled: false,
-    nombre: '', programa: '',
+    disabled: false, gameActive: false,
+    nombre: '', programa: '', email: '', is_retake: false,
     catStats: {
         aprovechable:  { correct: 0, total: 0 },
         no_aprovechable: { correct: 0, total: 0 },
@@ -1065,40 +1190,128 @@ const STATE = {
     }
 };
 
+// Builds a proportionally balanced item deck for the given number of rounds.
+// Category quotas: aprovechable 10/35, no_aprovechable 10/35, organico 7/35, especial 8/35.
+function buildBalancedDeck(totalRounds) {
+    const DB_COUNTS = { aprovechable: 10, no_aprovechable: 10, organico: 7, especial: 8 };
+    const DB_TOTAL  = 35;
+    const cats      = Object.keys(DB_COUNTS);
+
+    // Floor division first, then distribute remainder by largest fractional parts
+    const quotas = {};
+    let allocated = 0;
+    cats.forEach(cat => {
+        quotas[cat] = Math.floor(totalRounds * DB_COUNTS[cat] / DB_TOTAL);
+        allocated  += quotas[cat];
+    });
+    const remainder = totalRounds - allocated;
+    cats.slice()
+        .sort((a, b) =>
+            (totalRounds * DB_COUNTS[b] / DB_TOTAL - quotas[b]) -
+            (totalRounds * DB_COUNTS[a] / DB_TOTAL - quotas[a])
+        )
+        .slice(0, remainder)
+        .forEach(cat => quotas[cat]++);
+
+    // Pick items from each category (wrap around if quota > pool size)
+    const deck = [];
+    cats.forEach(cat => {
+        const pool = WASTE_DB.filter(w => w.category === cat)
+            .sort(() => Math.random() - 0.5);
+        for (let i = 0; i < quotas[cat]; i++) deck.push(pool[i % pool.length]);
+    });
+
+    // Fisher-Yates shuffle
+    for (let i = deck.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [deck[i], deck[j]] = [deck[j], deck[i]];
+    }
+    return deck;
+}
+
+function checkEmailUsedLocally(email) {
+    try {
+        const used = JSON.parse(localStorage.getItem('herisUsedEmails') || '[]');
+        return used.includes(email.toLowerCase());
+    } catch (_) { return false; }
+}
+
+function markEmailUsedLocally(email) {
+    try {
+        const used = JSON.parse(localStorage.getItem('herisUsedEmails') || '[]');
+        const key  = email.toLowerCase();
+        if (!used.includes(key)) { used.push(key); localStorage.setItem('herisUsedEmails', JSON.stringify(used)); }
+    } catch (_) {}
+}
+
 // ═══════════════════════════════════════════════════════════════
 //  LÓGICA DE JUEGO
 // ═══════════════════════════════════════════════════════════════
-function startGame() {
-    // Validar registro
-    const nombre   = document.getElementById('input-nombre').value.trim();
-    const programa = document.getElementById('input-programa').value.trim();
-    let valid = true;
+async function startGame(isReplay = false) {
+    let nombre, programa, email, is_retake;
 
-    const errNombre   = document.getElementById('error-nombre');
-    const errPrograma = document.getElementById('error-programa');
-    const inNombre    = document.getElementById('input-nombre');
-    const inPrograma  = document.getElementById('input-programa');
+    if (isReplay) {
+        // Reutilizar datos del STATE actual; siempre es reintento
+        nombre     = STATE.nombre;
+        programa   = STATE.programa;
+        email      = STATE.email;
+        is_retake  = true;
+    } else {
+        // Leer y validar formulario
+        nombre   = document.getElementById('input-nombre').value.trim();
+        programa = document.getElementById('input-programa').value.trim();
+        email    = document.getElementById('input-email').value.trim().toLowerCase();
+        const consent = document.getElementById('input-consent').checked;
 
-    if (!nombre) {
-        errNombre.classList.add('visible'); inNombre.classList.add('input-error'); valid = false;
-    } else { errNombre.classList.remove('visible'); inNombre.classList.remove('input-error'); }
+        let valid = true;
+        const fields = [
+            { val: nombre,   errId: 'error-nombre',   inId: 'input-nombre',   msg: 'visible' },
+            { val: programa, errId: 'error-programa',  inId: 'input-programa', msg: 'visible' },
+        ];
+        fields.forEach(f => {
+            const err = document.getElementById(f.errId);
+            const inp = document.getElementById(f.inId);
+            if (!f.val) { err.classList.add('visible'); inp.classList.add('input-error'); valid = false; }
+            else        { err.classList.remove('visible'); inp.classList.remove('input-error'); }
+        });
 
-    if (!programa) {
-        errPrograma.classList.add('visible'); inPrograma.classList.add('input-error'); valid = false;
-    } else { errPrograma.classList.remove('visible'); inPrograma.classList.remove('input-error'); }
+        const emailRegex = /^[^\s@]+@umb\.edu\.co$/i;
+        const errEmail = document.getElementById('error-email');
+        const inEmail  = document.getElementById('input-email');
+        if (!emailRegex.test(email)) {
+            errEmail.classList.add('visible'); inEmail.classList.add('input-error'); valid = false;
+        } else { errEmail.classList.remove('visible'); inEmail.classList.remove('input-error'); }
 
-    if (!valid) return;
+        const errConsent = document.getElementById('error-consent');
+        if (!consent) { errConsent.classList.add('visible'); valid = false; }
+        else          { errConsent.classList.remove('visible'); }
+
+        if (!valid) return;
+
+        // Control de duplicados por localStorage (anon RLS bloquea SELECT en Supabase)
+        const alreadyPlayed = checkEmailUsedLocally(email);
+        const retakeWarning = document.getElementById('retake-warning');
+        if (alreadyPlayed) {
+            retakeWarning.classList.add('visible');
+            is_retake = true;
+        } else {
+            retakeWarning.classList.remove('visible');
+            is_retake = false;
+        }
+    }
 
     const rounds = parseInt(document.getElementById('rounds-setting')?.value ?? 15);
     const timer  = parseInt(document.getElementById('timer-setting')?.value  ?? 30);
+    const deck   = buildBalancedDeck(rounds);
 
-    Object.assign(STATE, { nombre, programa,
+    Object.assign(STATE, {
+        nombre, programa, email, is_retake,
         score: 0, round: 0, totalRounds: rounds,
         timerSec: timer, timeLeft: timer,
         timerInterval: null, itemStartTime: null, currentItem: null,
-        usedIds: [], answers: [],
+        answers: [], deck,
         streak: 0, maxStreak: 0, responseTimes: [],
-        disabled: false,
+        disabled: false, gameActive: true,
         catStats: {
             aprovechable:    { correct: 0, total: 0 },
             no_aprovechable: { correct: 0, total: 0 },
@@ -1117,21 +1330,10 @@ function nextItem() {
     hideFB();
 
     if (STATE.round >= STATE.totalRounds) { endGame(); return; }
+
+    const item = STATE.deck[STATE.round]; // 0-indexed; round is incremented after
     STATE.round++;
-
-    // Select item with progressive difficulty
-    let pool = WASTE_DB.filter(w => !STATE.usedIds.includes(w.id));
-    if (pool.length === 0) { STATE.usedIds = []; pool = [...WASTE_DB]; }
-
-    const frac = STATE.round / STATE.totalRounds;
-    let filtered = pool;
-    if (frac < 0.4)       filtered = pool.filter(w => w.difficulty === 'easy') || pool;
-    else if (frac < 0.72) filtered = pool.filter(w => w.difficulty !== 'hard') || pool;
-    if (filtered.length < 2) filtered = pool;
-
-    const item = filtered[Math.floor(Math.random() * filtered.length)];
     STATE.currentItem = item;
-    STATE.usedIds.push(item.id);
     STATE.itemStartTime = Date.now();
 
     // Render item
@@ -1192,7 +1394,7 @@ function onTimeout() {
     const pts = -3;
     STATE.score = Math.max(0, STATE.score + pts);
     refreshScore();
-    STATE.answers.push({ item, correct: false, points: pts, rt });
+    STATE.answers.push({ item, correct: false, points: pts, rt, answer_type: 'timeout' });
     showFB(false, item, pts, true);
 }
 
@@ -1228,7 +1430,7 @@ function selectBin(cat) {
     STATE.catStats[item.category].total++;
     STATE.score = Math.max(0, STATE.score + pts);
     refreshScore();
-    STATE.answers.push({ item, correct, selectedCat: cat, points: pts, rt });
+    STATE.answers.push({ item, correct, selectedCat: cat, points: pts, rt, answer_type: correct ? 'correct' : 'incorrect' });
 
     if (STATE.streak >= 3) showStreakToast(STATE.streak);
     showFB(correct, item, pts, false);
@@ -1308,6 +1510,7 @@ function continueGame() {
 // ═══════════════════════════════════════════════════════════════
 function endGame() {
     clearInterval(STATE.timerInterval);
+    STATE.gameActive = false;
     hideFB();
 
     const total   = STATE.answers.length;
@@ -1320,11 +1523,21 @@ function endGame() {
     const cls = classify(acc);
 
     saveHistory({ date: new Date().toLocaleDateString('es-CO'), score: STATE.score, accuracy: Math.round(acc), classification: cls.title, rounds: total });
+    markEmailUsedLocally(STATE.email);
 
     // Enviar sesión a Supabase
+    // Nota: si las columnas email/consent_accepted/is_retake/timeout_count aún no existen,
+    // ejecuta en SQL: ALTER TABLE game_sessions
+    //   ADD COLUMN email TEXT,
+    //   ADD COLUMN consent_accepted BOOLEAN DEFAULT true,
+    //   ADD COLUMN is_retake BOOLEAN DEFAULT false,
+    //   ADD COLUMN timeout_count INTEGER DEFAULT 0;
     sendToSupabase({
         nombre:            STATE.nombre,
         programa:          STATE.programa,
+        email:             STATE.email,
+        consent_accepted:  true,
+        is_retake:         STATE.is_retake,
         score:             STATE.score,
         total_rounds:      total,
         correct_answers:   correct,
@@ -1333,6 +1546,7 @@ function endGame() {
         max_streak:        STATE.maxStreak,
         classification:    cls.title,
         timer_seconds:     STATE.timerSec,
+        timeout_count:     STATE.answers.filter(a => a.answer_type === 'timeout').length,
         apr_correct:       STATE.catStats.aprovechable.correct,
         apr_total:         STATE.catStats.aprovechable.total,
         noapr_correct:     STATE.catStats.no_aprovechable.correct,
@@ -1484,6 +1698,29 @@ function renderHistoryPreview() {
 }
 
 // ═══════════════════════════════════════════════════════════════
+//  PAUSA / REANUDACIÓN / SALIDA
+// ═══════════════════════════════════════════════════════════════
+function pauseGame() {
+    clearInterval(STATE.timerInterval);
+    document.getElementById('pause-overlay').classList.remove('hidden');
+}
+
+function resumeGame() {
+    document.getElementById('pause-overlay').classList.add('hidden');
+    // Reanudar temporizador solo si la partida está activa (no en feedback)
+    if (STATE.timerSec > 0 && STATE.timeLeft > 0 && !STATE.disabled) {
+        STATE.timerInterval = setInterval(tickTimer, 1000);
+    }
+}
+
+function quitGame() {
+    clearInterval(STATE.timerInterval);
+    STATE.gameActive = false;
+    document.getElementById('pause-overlay').classList.add('hidden');
+    showStartScreen();
+}
+
+// ═══════════════════════════════════════════════════════════════
 //  NAVEGACIÓN
 // ═══════════════════════════════════════════════════════════════
 function showScreen(id) {
@@ -1503,13 +1740,29 @@ function showStartScreen() {
 document.addEventListener('DOMContentLoaded', () => {
     renderHistoryPreview();
 
+    // Habilitar botón "Comenzar" solo si el checkbox de consentimiento está marcado
+    document.getElementById('input-consent').addEventListener('change', function () {
+        document.getElementById('btn-start').disabled = !this.checked;
+    });
+
     const KEY_MAP = { '1': 'aprovechable', '2': 'no_aprovechable', '3': 'organico', '4': 'especial' };
     document.addEventListener('keydown', e => {
-        const gameActive = document.getElementById('game-screen').classList.contains('active');
-        const fbVisible  = !document.getElementById('fb-overlay').classList.contains('hidden');
+        const gameScreenActive = document.getElementById('game-screen').classList.contains('active');
+        const fbVisible        = !document.getElementById('fb-overlay').classList.contains('hidden');
+        const pauseVisible     = !document.getElementById('pause-overlay').classList.contains('hidden');
 
-        if (gameActive && !fbVisible && KEY_MAP[e.key]) selectBin(KEY_MAP[e.key]);
+        if (gameScreenActive && !fbVisible && !pauseVisible && KEY_MAP[e.key]) selectBin(KEY_MAP[e.key]);
         if (fbVisible  && e.key === 'Enter') continueGame();
+        if (gameScreenActive && !fbVisible && !pauseVisible && e.key === 'Escape') pauseGame();
+        if (pauseVisible && e.key === 'Escape') resumeGame();
+    });
+
+    // Advertencia al cerrar/recargar durante una partida activa
+    window.addEventListener('beforeunload', e => {
+        if (STATE.gameActive) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
     });
 });
 </script>
