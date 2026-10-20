@@ -832,7 +832,7 @@
             <div class="reg-group">
                 <label for="input-email">Correo institucional UMB</label>
                 <input type="email" id="input-email" placeholder="Ej: m.garcia@umb.edu.co" maxlength="100" autocomplete="email">
-                <span class="reg-error" id="error-email">Ingresa tu correo institucional @umb.edu.co</span>
+                <span class="reg-error" id="error-email">Ingresa tu correo institucional (@academia.umb.edu.co o @umb.edu.co)</span>
             </div>
             <div class="reg-group consent-group">
                 <label class="consent-label">
@@ -1300,14 +1300,15 @@ function markEmailUsedLocally(email) {
 // ═══════════════════════════════════════════════════════════════
 // Textos del formulario según el tipo de participante (estudiante o docente)
 const TEXTOS_PROGRAMA = {
-    estudiante: { label: 'Programa académico', placeholder: 'Ej: Ingeniería Ambiental',      error: 'Por favor ingresa tu programa académico' },
-    docente:    { label: 'Programa o facultad', placeholder: 'Ej: Ingeniería de Software',    error: 'Por favor ingresa tu programa o facultad' }
+    estudiante: { label: 'Programa académico', placeholder: 'Ej: Ingeniería Ambiental',   error: 'Por favor ingresa tu programa académico', email: 'Ej: m.garcia@academia.umb.edu.co' },
+    docente:    { label: 'Programa o facultad', placeholder: 'Ej: Ingeniería de Software', error: 'Por favor ingresa tu programa o facultad', email: 'Ej: m.garcia@umb.edu.co' }
 };
 
 function aplicarTipoParticipante(tipo) {
     const t = TEXTOS_PROGRAMA[tipo] || TEXTOS_PROGRAMA.estudiante;
     document.getElementById('label-programa').textContent = t.label;
     document.getElementById('input-programa').placeholder = t.placeholder;
+    document.getElementById('input-email').placeholder = t.email;
     document.getElementById('error-programa').textContent = t.error;
     document.getElementById('error-tipo').classList.remove('visible');
     document.getElementById('tipo-opciones').classList.remove('input-error');
@@ -1351,7 +1352,8 @@ async function startGame(isReplay = false) {
             else        { err.classList.remove('visible'); inp.classList.remove('input-error'); }
         });
 
-        const emailRegex = /^[^\s@]+@umb\.edu\.co$/i;
+        // Se aceptan los dos dominios institucionales: @academia.umb.edu.co (estudiantes) y @umb.edu.co
+        const emailRegex = /^[^\s@]+@(academia\.)?umb\.edu\.co$/i;
         const errEmail = document.getElementById('error-email');
         const inEmail  = document.getElementById('input-email');
         if (!emailRegex.test(email)) {

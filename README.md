@@ -6,7 +6,7 @@ Juego web educativo para clasificar residuos sólidos según las categorías del
 
 ## Cómo funciona
 
-1. El usuario indica si es **estudiante** o **docente** (sin opción preseleccionada) e ingresa su **nombre**, su **programa académico** (o facultad, si es docente) y su **correo institucional @umb.edu.co**, y acepta el tratamiento de datos
+1. El usuario indica si es **estudiante** o **docente** (sin opción preseleccionada) e ingresa su **nombre**, su **programa académico** (o facultad, si es docente) y su **correo institucional** (`@academia.umb.edu.co` o `@umb.edu.co`), y acepta el tratamiento de datos
 2. Configura el número de rondas y el tiempo por ítem
 3. Clasifica 15–30 residuos arrastrándolos o haciendo clic en el contenedor correcto
 4. Al terminar, ve su puntaje, precisión por categoría y clasificación
@@ -115,7 +115,7 @@ y haz clic en el botón **Export → Download CSV** que aparece en los resultado
 | `nombre` | text | Nombre del participante |
 | `programa` | text | Programa académico (estudiantes) o programa/facultad (docentes) |
 | `tipo_participante` | text | `estudiante` o `docente` (restricción `CHECK`) |
-| `email` | text | Correo institucional @umb.edu.co |
+| `email` | text | Correo institucional (`@academia.umb.edu.co` o `@umb.edu.co`) |
 | `consent_accepted` | boolean | Aceptó el tratamiento de datos (Ley 1581/2012) |
 | `is_retake` | boolean | `true` si el correo ya había jugado en ese navegador; se excluye del análisis principal |
 | `timeout_count` | integer | Ítems que se agotaron por tiempo |
