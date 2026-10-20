@@ -67,11 +67,15 @@
         .cats-preview {
             display: grid;
             grid-template-columns: 1fr 1fr;
+            grid-auto-rows: 1fr;
             gap: 0.625rem;
             margin-bottom: 1.75rem;
         }
 
         .cat-chip {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
             padding: 0.625rem 0.75rem;
             border-radius: 10px;
             font-size: 0.8rem;
@@ -311,6 +315,7 @@
         .bins-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
+            grid-auto-rows: 1fr;
             gap: 0.875rem;
             width: 100%;
             max-width: 680px;
