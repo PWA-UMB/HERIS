@@ -6,7 +6,7 @@ Juego web educativo para clasificar residuos sólidos según las categorías del
 
 ## Cómo funciona
 
-1. El usuario ingresa su **nombre** y **programa académico**
+1. El usuario indica si es **estudiante** o **docente** (sin opción preseleccionada) e ingresa su **nombre**, su **programa académico** (o facultad, si es docente) y su **correo institucional @umb.edu.co**, y acepta el tratamiento de datos
 2. Configura el número de rondas y el tiempo por ítem
 3. Clasifica 15–30 residuos arrastrándolos o haciendo clic en el contenedor correcto
 4. Al terminar, ve su puntaje, precisión por categoría y clasificación
@@ -71,6 +71,22 @@ GROUP BY programa
 ORDER BY precision_promedio DESC;
 ```
 
+### Comparar estudiantes y docentes
+```sql
+SELECT
+    tipo_participante,
+    COUNT(*)                         AS sesiones,
+    ROUND(AVG(accuracy), 2)          AS precision_promedio,
+    ROUND(AVG(score), 1)             AS puntaje_promedio,
+    ROUND(AVG(avg_response_time), 2) AS tiempo_respuesta_prom
+FROM game_sessions
+WHERE is_retake IS NOT TRUE
+GROUP BY tipo_participante
+ORDER BY sesiones DESC;
+```
+
+Las filas anteriores al 2026-10-20 no tienen `tipo_participante` (quedan en `NULL`).
+
 ### Categoría con más errores (global)
 ```sql
 SELECT
@@ -97,7 +113,12 @@ y haz clic en el botón **Export → Download CSV** que aparece en los resultado
 | `id` | uuid | Identificador único de la sesión |
 | `created_at` | timestamptz | Fecha y hora de la partida |
 | `nombre` | text | Nombre del participante |
-| `programa` | text | Programa académico |
+| `programa` | text | Programa académico (estudiantes) o programa/facultad (docentes) |
+| `tipo_participante` | text | `estudiante` o `docente` (restricción `CHECK`) |
+| `email` | text | Correo institucional @umb.edu.co |
+| `consent_accepted` | boolean | Aceptó el tratamiento de datos (Ley 1581/2012) |
+| `is_retake` | boolean | `true` si el correo ya había jugado en ese navegador; se excluye del análisis principal |
+| `timeout_count` | integer | Ítems que se agotaron por tiempo |
 | `score` | integer | Puntaje final |
 | `total_rounds` | integer | Ítems jugados |
 | `correct_answers` | integer | Respuestas correctas |
