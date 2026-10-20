@@ -96,7 +96,7 @@ UNION ALL SELECT
 UNION ALL SELECT
     'Orgánicos',                           SUM(org_correct),                SUM(org_total)   FROM game_sessions
 UNION ALL SELECT
-    'Especiales/Peligrosos',               SUM(esp_correct),                SUM(esp_total)   FROM game_sessions;
+    'Riesgo Biológico',                    SUM(esp_correct),                SUM(esp_total)   FROM game_sessions;
 ```
 
 ### Exportar todo a CSV
@@ -130,7 +130,7 @@ y haz clic en el botón **Export → Download CSV** que aparece en los resultado
 | `apr_correct / apr_total` | integer | Aciertos y total en Aprovechables |
 | `noapr_correct / noapr_total` | integer | Aciertos y total en No Aprovechables |
 | `org_correct / org_total` | integer | Aciertos y total en Orgánicos |
-| `esp_correct / esp_total` | integer | Aciertos y total en Especiales/Peligrosos |
+| `esp_correct / esp_total` | integer | Aciertos y total en Riesgo Biológico (el prefijo `esp_` viene de «especial») |
 
 ---
 

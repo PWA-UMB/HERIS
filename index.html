@@ -804,10 +804,10 @@
         </p>
 
         <div class="cats-preview">
-            <div class="cat-chip" style="background:#F5F5F5;border:2px solid #BDBDBD;color:#1A1A1A;">🗑️ Aprovechables<br><small style="font-weight:400;color:#616161;">Papel · Plástico · Vidrio · Metal</small></div>
+            <div class="cat-chip" style="background:#F5F5F5;border:2px solid #BDBDBD;color:#1A1A1A;">🗑️ Aprovechables<br><small style="font-weight:400;color:#616161;">Papel · Cartón · Plástico · Vidrio · Metal</small></div>
             <div class="cat-chip" style="background:#1A1A1A;color:#FFF;">🗑️ No Aprovechables<br><small style="font-weight:400;opacity:.75;">Residuos ordinarios</small></div>
-            <div class="cat-chip" style="background:#1B5E20;color:#FFF;">🌿 Orgánicos<br><small style="font-weight:400;opacity:.75;">Cáscaras · Café · Jardín</small></div>
-            <div class="cat-chip" style="background:#B71C1C;color:#FFF;">⚠️ Especiales / Peligrosos<br><small style="font-weight:400;opacity:.75;">RAEE · Pilas · Medicamentos</small></div>
+            <div class="cat-chip" style="background:#1B5E20;color:#FFF;">🌿 Orgánicos</div>
+            <div class="cat-chip" style="background:#B71C1C;color:#FFF;">⚠️ Riesgo Biológico</div>
         </div>
 
         <div class="reg-form">
@@ -868,7 +868,7 @@
         </div>
 
         <p class="hint-keys" style="margin-bottom:1.25rem;">
-            Atajos de teclado: <kbd>1</kbd> Aprovechable · <kbd>2</kbd> No Aprovechable · <kbd>3</kbd> Orgánico · <kbd>4</kbd> Especial · <kbd>Enter</kbd> Continuar
+            Atajos de teclado: <kbd>1</kbd> Aprovechable · <kbd>2</kbd> No Aprovechable · <kbd>3</kbd> Orgánico · <kbd>4</kbd> Riesgo Biológico · <kbd>Enter</kbd> Continuar
         </p>
 
         <button class="btn-primary" id="btn-start" onclick="startGame()" disabled>🎮 Comenzar juego</button>
@@ -913,17 +913,15 @@
                 <div class="bin-label">NO APROVECHABLES</div>
                 <div class="bin-sublabel">Ordinarios sin valor de reciclaje</div>
             </button>
-            <button type="button" class="bin bin-organico" id="bin-organico" onclick="selectBin('organico')" aria-label="Orgánicos: cáscaras de frutas y de huevo, cuncho de café, frutas dañadas y poda de jardín">
+            <button type="button" class="bin bin-organico" id="bin-organico" onclick="selectBin('organico')" aria-label="Orgánicos">
                 <span class="bin-key" aria-hidden="true">3</span>
                 <span class="bin-icon" aria-hidden="true">🌿</span>
                 <div class="bin-label">ORGÁNICOS</div>
-                <div class="bin-sublabel">Cáscaras · Cuncho de café · Poda de jardín</div>
             </button>
-            <button type="button" class="bin bin-especial" id="bin-especial" onclick="selectBin('especial')" aria-label="Especiales o peligrosos: RAEE, pilas y medicamentos">
+            <button type="button" class="bin bin-especial" id="bin-especial" onclick="selectBin('especial')" aria-label="Riesgo biológico">
                 <span class="bin-key" aria-hidden="true">4</span>
                 <span class="bin-icon" aria-hidden="true">⚠️</span>
-                <div class="bin-label">ESPECIALES / PELIGROSOS</div>
-                <div class="bin-sublabel">RAEE · Pilas · Medicamentos</div>
+                <div class="bin-label">RIESGO BIOLÓGICO</div>
             </button>
         </div>
     </div>
@@ -1531,7 +1529,7 @@ const CAT_META = {
     aprovechable:    { label: 'Aprovechable (Blanco)',          bg: '#F5F5F5', color: '#1A1A1A', border: '#BDBDBD' },
     no_aprovechable: { label: 'No Aprovechable (Negro)',        bg: '#1A1A1A', color: '#FFF',    border: '#1A1A1A' },
     organico:        { label: 'Orgánico (Verde)',               bg: '#1B5E20', color: '#FFF',    border: '#1B5E20' },
-    especial:        { label: 'Especial / Peligroso (Rojo)',    bg: '#B71C1C', color: '#FFF',    border: '#B71C1C' },
+    especial:        { label: 'Riesgo Biológico (Rojo)',        bg: '#B71C1C', color: '#FFF',    border: '#B71C1C' },
 };
 
 function showFB(correct, item, pts, isTimeout) {
@@ -1665,7 +1663,7 @@ function renderCatBreakdown() {
         { key: 'aprovechable',    label: 'Aprovechables',          color: '#4CAF50' },
         { key: 'no_aprovechable', label: 'No Aprovechables',       color: '#424242' },
         { key: 'organico',        label: 'Orgánicos',              color: '#2E7D32' },
-        { key: 'especial',        label: 'Especiales / Peligrosos',color: '#C62828' },
+        { key: 'especial',        label: 'Riesgo Biológico',       color: '#C62828' },
     ];
 
     document.getElementById('cat-breakdown').innerHTML = cats.map(c => {
@@ -1695,7 +1693,7 @@ function renderCatBreakdown() {
 function renderPersonalFB(cls) {
     const msgs = [`🎯 ${cls.msg}`];
 
-    const catLabels = { aprovechable: 'Aprovechables', no_aprovechable: 'No Aprovechables', organico: 'Orgánicos', especial: 'Especiales/Peligrosos' };
+    const catLabels = { aprovechable: 'Aprovechables', no_aprovechable: 'No Aprovechables', organico: 'Orgánicos', especial: 'Riesgo Biológico' };
     const worst = Object.entries(STATE.catStats)
         .filter(([, s]) => s.total > 0 && s.correct / s.total < 0.7)
         .sort(([, a], [, b]) => (a.correct / a.total) - (b.correct / b.total))
