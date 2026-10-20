@@ -641,6 +641,49 @@
         }
         .reg-error.visible { display: block; }
 
+        /* ── TIPO DE PARTICIPANTE (estudiante / docente) ── */
+        .reg-group .reg-label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .tipo-opciones { display: flex; gap: 0.5rem; }
+        .reg-group .tipo-opcion {
+            position: relative;
+            flex: 1;
+            display: block;
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text);
+            text-transform: none;
+            letter-spacing: 0;
+            cursor: pointer;
+        }
+        .tipo-opcion input {
+            position: absolute;
+            opacity: 0;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            cursor: pointer;
+        }
+        .tipo-opcion span {
+            display: block;
+            padding: 0.625rem 0.875rem;
+            text-align: center;
+            border-radius: 8px;
+            border: 2px solid #E0E0E0;
+            background: white;
+            transition: border-color 0.15s, background 0.15s, color 0.15s;
+        }
+        .tipo-opcion input:checked + span { background: var(--primary); border-color: var(--primary); color: white; }
+        .tipo-opcion input:focus-visible + span { outline: 3px solid var(--primary-light); outline-offset: 2px; }
+        .tipo-opciones.input-error .tipo-opcion span { border-color: #D32F2F; }
+
         /* ── CONSENT ── */
         .consent-group { margin-top: 0.25rem; }
         .consent-label {
@@ -769,12 +812,20 @@
 
         <div class="reg-form">
             <div class="reg-group">
+                <span class="reg-label" id="label-tipo">Soy</span>
+                <div class="tipo-opciones" id="tipo-opciones" role="radiogroup" aria-labelledby="label-tipo">
+                    <label class="tipo-opcion"><input type="radio" name="tipo" id="input-tipo-estudiante" value="estudiante"><span>Estudiante</span></label>
+                    <label class="tipo-opcion"><input type="radio" name="tipo" id="input-tipo-docente" value="docente"><span>Docente</span></label>
+                </div>
+                <span class="reg-error" id="error-tipo">Selecciona si eres estudiante o docente</span>
+            </div>
+            <div class="reg-group">
                 <label for="input-nombre">Nombre completo</label>
                 <input type="text" id="input-nombre" placeholder="Ej: María García López" maxlength="100" autocomplete="name">
                 <span class="reg-error" id="error-nombre">Por favor ingresa tu nombre completo</span>
             </div>
             <div class="reg-group">
-                <label for="input-programa">Programa académico</label>
+                <label for="input-programa" id="label-programa">Programa académico</label>
                 <input type="text" id="input-programa" placeholder="Ej: Ingeniería Ambiental" maxlength="100">
                 <span class="reg-error" id="error-programa">Por favor ingresa tu programa académico</span>
             </div>
@@ -1181,7 +1232,7 @@ const STATE = {
     answers: [], deck: [],
     streak: 0, maxStreak: 0, responseTimes: [],
     disabled: false, gameActive: false,
-    nombre: '', programa: '', email: '', is_retake: false,
+    nombre: '', programa: '', email: '', tipo: '', is_retake: false,
     catStats: {
         aprovechable:  { correct: 0, total: 0 },
         no_aprovechable: { correct: 0, total: 0 },
@@ -1247,23 +1298,48 @@ function markEmailUsedLocally(email) {
 // ═══════════════════════════════════════════════════════════════
 //  LÓGICA DE JUEGO
 // ═══════════════════════════════════════════════════════════════
+// Textos del formulario según el tipo de participante (estudiante o docente)
+const TEXTOS_PROGRAMA = {
+    estudiante: { label: 'Programa académico', placeholder: 'Ej: Ingeniería Ambiental',      error: 'Por favor ingresa tu programa académico' },
+    docente:    { label: 'Programa o facultad', placeholder: 'Ej: Ingeniería de Software',    error: 'Por favor ingresa tu programa o facultad' }
+};
+
+function aplicarTipoParticipante(tipo) {
+    const t = TEXTOS_PROGRAMA[tipo] || TEXTOS_PROGRAMA.estudiante;
+    document.getElementById('label-programa').textContent = t.label;
+    document.getElementById('input-programa').placeholder = t.placeholder;
+    document.getElementById('error-programa').textContent = t.error;
+    document.getElementById('error-tipo').classList.remove('visible');
+    document.getElementById('tipo-opciones').classList.remove('input-error');
+}
+
 async function startGame(isReplay = false) {
-    let nombre, programa, email, is_retake;
+    let nombre, programa, email, tipo, is_retake;
 
     if (isReplay) {
         // Reutilizar datos del STATE actual; siempre es reintento
         nombre     = STATE.nombre;
         programa   = STATE.programa;
         email      = STATE.email;
+        tipo       = STATE.tipo;
         is_retake  = true;
     } else {
         // Leer y validar formulario
         nombre   = document.getElementById('input-nombre').value.trim();
         programa = document.getElementById('input-programa').value.trim();
         email    = document.getElementById('input-email').value.trim().toLowerCase();
+        const tipoSel = document.querySelector('input[name="tipo"]:checked');
+        tipo     = tipoSel ? tipoSel.value : '';
         const consent = document.getElementById('input-consent').checked;
 
         let valid = true;
+
+        // Sin opción preseleccionada: el participante debe elegir explícitamente
+        const errTipo = document.getElementById('error-tipo');
+        const boxTipo = document.getElementById('tipo-opciones');
+        if (!tipo) { errTipo.classList.add('visible'); boxTipo.classList.add('input-error'); valid = false; }
+        else       { errTipo.classList.remove('visible'); boxTipo.classList.remove('input-error'); }
+
         const fields = [
             { val: nombre,   errId: 'error-nombre',   inId: 'input-nombre',   msg: 'visible' },
             { val: programa, errId: 'error-programa',  inId: 'input-programa', msg: 'visible' },
@@ -1305,7 +1381,7 @@ async function startGame(isReplay = false) {
     const deck   = buildBalancedDeck(rounds);
 
     Object.assign(STATE, {
-        nombre, programa, email, is_retake,
+        nombre, programa, email, tipo, is_retake,
         score: 0, round: 0, totalRounds: rounds,
         timerSec: timer, timeLeft: timer,
         timerInterval: null, itemStartTime: null, currentItem: null,
@@ -1526,16 +1602,19 @@ function endGame() {
     markEmailUsedLocally(STATE.email);
 
     // Enviar sesión a Supabase
-    // Nota: si las columnas email/consent_accepted/is_retake/timeout_count aún no existen,
-    // ejecuta en SQL: ALTER TABLE game_sessions
-    //   ADD COLUMN email TEXT,
-    //   ADD COLUMN consent_accepted BOOLEAN DEFAULT true,
-    //   ADD COLUMN is_retake BOOLEAN DEFAULT false,
-    //   ADD COLUMN timeout_count INTEGER DEFAULT 0;
+    // Nota: si estas columnas aún no existen, la inserción completa falla (PGRST204) y no se guarda nada.
+    // Ejecuta en SQL: ALTER TABLE public.game_sessions
+    //   ADD COLUMN IF NOT EXISTS email TEXT,
+    //   ADD COLUMN IF NOT EXISTS consent_accepted BOOLEAN,
+    //   ADD COLUMN IF NOT EXISTS is_retake BOOLEAN,
+    //   ADD COLUMN IF NOT EXISTS timeout_count INTEGER,
+    //   ADD COLUMN IF NOT EXISTS tipo_participante TEXT
+    //     CHECK (tipo_participante IN ('estudiante', 'docente'));
     sendToSupabase({
         nombre:            STATE.nombre,
         programa:          STATE.programa,
         email:             STATE.email,
+        tipo_participante: STATE.tipo,
         consent_accepted:  true,
         is_retake:         STATE.is_retake,
         score:             STATE.score,
@@ -1744,6 +1823,10 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('input-consent').addEventListener('change', function () {
         document.getElementById('btn-start').disabled = !this.checked;
     });
+
+    // Estudiante o docente: ajusta la etiqueta del programa y limpia el error de selección
+    document.querySelectorAll('input[name="tipo"]').forEach(r =>
+        r.addEventListener('change', () => aplicarTipoParticipante(r.value)));
 
     const KEY_MAP = { '1': 'aprovechable', '2': 'no_aprovechable', '3': 'organico', '4': 'especial' };
     document.addEventListener('keydown', e => {
